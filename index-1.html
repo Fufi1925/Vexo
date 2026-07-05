@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0f1012" />
+  <title>VEXO — TikToker & Creator Hub</title>
+  <script>
+    (function(){
+      try {
+        var saved = localStorage.getItem('vexo-theme');
+        document.documentElement.setAttribute('data-theme', saved || 'dark');
+      } catch(e) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }
+    })();
+  </script>
+  <style>
+    /* Exakt das CSS-Designsystem der VOID Shop Website */
+    :root {
+      --bg: #f7f4ef;
+      --surface: #fffdf9;
+      --surface-2: #efe9df;
+      --ink: #171717;
+      --muted: #756d63;
+      --muted-2: #9a9186;
+      --line: #dfd6ca;
+      --line-soft: rgba(30, 26, 22, 0.08);
+      --accent: #8b6f47;
+      --accent-soft: #ede2d2;
+      --good: #2f7d55;
+      --warn: #9c6b24;
+      --bad: #a33c3c;
+      --shadow: 0 20px 70px rgba(28, 24, 20, 0.08);
+      --nav: rgba(247, 244, 239, 0.85);
+      --dark-btn: #151515;
+      --dark-btn-text: #ffffff;
+    }
+    html[data-theme="dark"] {
+      --bg: #0f1012;
+      --surface: #17191d;
+      --surface-2: #202328;
+      --ink: #f5f0e8;
+      --muted: #aaa198;
+      --muted-2: #827b72;
+      --line: #2b2d31;
+      --line-soft: rgba(255, 255, 255, 0.08);
+      --accent: #c1a16d;
+      --accent-soft: #2a241b;
+      --good: #73c995;
+      --warn: #d3a55c;
+      --bad: #d47878;
+      --shadow: 0 24px 80px rgba(0, 0, 0, 0.34);
+      --nav: rgba(15, 16, 18, 0.85);
+      --dark-btn: #f5f0e8;
+      --dark-btn-text: #111214;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-8px); }
+    }
+    @keyframes pulseGlow {
+      0%, 100% { box-shadow: 0 0 14px rgba(47, 125, 85, 0.28); }
+      50% { box-shadow: 0 0 28px rgba(47, 125, 85, 0.6); }
+    }
+    @keyframes borderFlow {
+      0% { background-position: 0% 50%; }
+      100% { background-position: 250% 50%; }
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: radial-gradient(circle at 12% -10%, rgba(139, 111, 71, 0.14), transparent 30%),
+                  radial-gradient(circle at 90% 8%, rgba(47, 125, 85, 0.08), transparent 28%),
+                  var(--bg);
+      color: var(--ink);
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.55;
+      -webkit-font-smoothing: antialiased;
+    }
+    a { text-decoration: none; color: inherit; }
+    button { font: inherit; cursor: pointer; border: none; background: none; }
+    .wrap { width: min(1120px, calc(100% - 40px)); margin: 0 auto; }
+
+    section, .dc-card, .stat-card {
+      animation: fadeIn 0.65s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    /* Navigation */
+    .nav-shell {
+      position: sticky; top: 0; z-index: 50;
+      background: var(--nav); backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--line-soft);
+    }
+    .nav { height: 72px; display: flex; align-items: center; justify-content: space-between; gap: 18px; }
+    .brand { display: flex; align-items: center; gap: 12px; font-weight: 850; letter-spacing: -0.04em; font-size: 20px; }
+    .mark {
+      width: 40px; height: 40px; border-radius: 14px;
+      background: var(--ink); color: var(--bg);
+      display: grid; place-items: center; font-weight: 900; font-size: 20px;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+      animation: float 3.8s ease-in-out infinite;
+    }
+    .brand small { display: block; color: var(--muted); font-size: 11px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; margin-top: -3px; }
+
+    .links {
+      display: flex; align-items: center; gap: 2px;
+      border: 1px solid var(--line); background: rgba(255, 255, 255, 0.04);
+      padding: 5px; border-radius: 999px;
+    }
+    .links a {
+      font-size: 14px; font-weight: 700; color: var(--muted);
+      padding: 8px 15px; border-radius: 999px; transition: 0.18s ease;
+    }
+    .links a:hover { background: var(--surface); color: var(--ink); }
+
+    .nav-actions { display: flex; align-items: center; gap: 10px; }
+    .theme-toggle {
+      width: 40px; height: 36px; border: 1px solid var(--line); border-radius: 999px;
+      background: var(--surface); color: var(--ink); display: grid; place-items: center;
+      transition: 0.18s ease;
+    }
+    .theme-toggle:hover { transform: translateY(-1px); border-color: var(--accent); }
+    .theme-toggle .sun { display: none; }
+    html[data-theme="dark"] .theme-toggle .sun { display: inline; }
+    html[data-theme="dark"] .theme-toggle .moon { display: none; }
+
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      min-height: 44px; padding: 0 20px; border-radius: 999px;
+      border: 1px solid var(--line); font-weight: 800; font-size: 14px;
+      transition: 0.2s cubic-bezier(0.16, 1, 0.3, 1); white-space: nowrap; cursor: pointer;
+    }
+    .btn:hover { transform: translateY(-2px); }
+    .btn-primary {
+      background: var(--dark-btn); color: var(--dark-btn-text);
+      border-color: var(--dark-btn); box-shadow: 0 14px 34px rgba(0, 0, 0, 0.15);
+    }
+    .btn-secondary { background: var(--surface); color: var(--ink); }
+    .btn-accent {
+      background: var(--accent); color: #15120c; border-color: var(--accent);
+      font-weight: 900;
+    }
+
+    /* Hero & Bio Section */
+    section { padding: 76px 0; }
+    .eyebrow {
+      display: inline-flex; align-items: center; gap: 8px; color: var(--accent);
+      font-size: 13px; font-weight: 850; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 14px;
+    }
+    .eyebrow:before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); }
+    
+    .hero { padding: 84px 0 54px; }
+    .hero-grid { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.8fr); gap: 48px; align-items: center; }
+    h1 { font-size: clamp(42px, 6.5vw, 78px); line-height: 0.98; letter-spacing: -0.07em; font-weight: 880; }
+    .lead { font-size: clamp(18px, 2vw, 22px); color: var(--muted); margin-top: 20px; }
+    
+    .bio-panel {
+      background: var(--surface); border: 1px solid var(--line); border-radius: 30px;
+      padding: 28px; box-shadow: var(--shadow); position: relative;
+    }
+    .bio-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(217, 200, 168, 0.12); color: var(--accent);
+      border: 1px solid rgba(217, 200, 168, 0.3); padding: 6px 14px; border-radius: 999px;
+      font-size: 13px; font-weight: 850; margin-bottom: 16px;
+    }
+    .tiktok-handle {
+      font-size: 24px; font-weight: 900; letter-spacing: -0.04em; margin-bottom: 8px; display: flex; align-items: center; gap: 10px;
+    }
+    .verified-icon { width: 22px; height: 22px; fill: var(--accent); }
+
+    /* Discord Cards Section */
+    .section-head { margin-bottom: 36px; }
+    h2 { font-size: clamp(30px, 4.2vw, 52px); line-height: 1.05; letter-spacing: -0.06em; font-weight: 850; }
+    
+    .dc-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(480px, 1fr)); gap: 26px; }
+    
+    .dc-card {
+      background: var(--surface); border: 1px solid var(--line); border-radius: 32px;
+      padding: 30px; position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between;
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s ease, box-shadow 0.25s ease;
+    }
+    .dc-card:before {
+      content: ""; position: absolute; inset: -2px; border-radius: 34px; padding: 2px;
+      background: linear-gradient(120deg, transparent 20%, rgba(217, 200, 168, 0.85), rgba(139, 111, 71, 0.9), transparent 80%);
+      background-size: 250% 250%; -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor; mask-composite: exclude; opacity: 0; transition: opacity 0.3s ease;
+      animation: borderFlow 3s linear infinite; pointer-events: none; z-index: 3;
+    }
+    .dc-card:hover:before { opacity: 1; }
+    .dc-card:hover {
+      transform: translateY(-8px); border-color: rgba(217, 200, 168, 0.4);
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+    }
+    
+    .card-banner {
+      height: 160px; border-radius: 20px; overflow: hidden; position: relative;
+      margin-bottom: 24px; display: flex; align-items: flex-end; padding: 18px;
+    }
+    .banner-1 {
+      background: linear-gradient(135deg, #2b1d3a, #5c2b80, #17191d);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .banner-2 {
+      background: linear-gradient(135deg, #1c2a23, #2f7d55, #17191d);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .banner-tag {
+      position: relative; z-index: 2; background: rgba(0, 0, 0, 0.65); backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.15); color: #fff; padding: 6px 14px; border-radius: 999px;
+      font-size: 13px; font-weight: 800; display: inline-flex; align-items: center; gap: 8px;
+    }
+
+    .dc-card h3 { font-size: 28px; font-weight: 880; letter-spacing: -0.04em; margin-bottom: 12px; }
+    .dc-card p { color: var(--muted); font-size: 16px; line-height: 1.6; margin-bottom: 28px; flex: 1; }
+    
+    .feature-tags { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 24px; }
+    .feature-tag {
+      font-size: 12px; font-weight: 750; background: var(--surface-2); color: var(--muted);
+      padding: 5px 11px; border-radius: 8px; border: 1px solid var(--line-soft);
+    }
+
+    .card-actions { display: flex; gap: 12px; flex-wrap: wrap; border-top: 1px solid var(--line-soft); padding-top: 22px; }
+
+    /* Coming Soon Stats Section */
+    .stats-shell {
+      background: var(--surface); border: 1px solid var(--line); border-radius: 34px;
+      padding: 40px; box-shadow: var(--shadow); position: relative; overflow: hidden;
+    }
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 18px; margin-top: 28px; }
+    .stat-card {
+      background: var(--surface-2); border: 1px solid var(--line); border-radius: 22px;
+      padding: 24px; position: relative; overflow: hidden;
+    }
+    .stat-card span { display: block; color: var(--muted); font-size: 14px; font-weight: 700; }
+    .stat-card strong {
+      display: block; font-size: 36px; font-weight: 900; letter-spacing: -0.05em; margin: 8px 0;
+      filter: blur(6px); opacity: 0.4; user-select: none;
+    }
+    .coming-chip {
+      position: absolute; inset: 0; display: grid; place-items: center;
+      background: rgba(23, 25, 29, 0.4); backdrop-filter: blur(2px);
+    }
+    .chip-text {
+      background: var(--ink); color: var(--bg); font-size: 12px; font-weight: 900;
+      padding: 6px 14px; border-radius: 999px; letter-spacing: 0.08em; text-transform: uppercase;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3); border: 1px solid var(--accent);
+    }
+
+    footer { border-top: 1px solid var(--line); padding: 48px 0; margin-top: 40px; color: var(--muted); font-size: 14px; }
+    .footer-row { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; }
+
+    @media (max-width: 860px) {
+      .hero-grid, .dc-grid { grid-template-columns: 1fr; }
+      .links { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation -->
+  <header class="nav-shell">
+    <div class="wrap nav">
+      <a href="#" class="brand">
+        <div class="mark">V</div>
+        <div>
+          VEXO
+          <small>TikToker & Creator Hub</small>
+        </div>
+      </a>
+      <nav class="links">
+        <a href="#about">Über mich</a>
+        <a href="#discords">Meine Discords</a>
+        <a href="#stats">Stats</a>
+      </nav>
+      <div class="nav-actions">
+        <button class="theme-toggle" id="themeBtn" aria-label="Theme wechseln">
+          <span class="moon">🌙</span>
+          <span class="sun">☀️</span>
+        </button>
+        <a href="#discords" class="btn btn-primary">💎 Community betreten</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero & Wer ich bin -->
+  <section id="about" class="hero wrap">
+    <div class="hero-grid">
+      <div>
+        <div class="eyebrow">🎬 Content Creator & TikToker</div>
+        <h1>Hey, ich bin <span style="color: var(--accent);">VEXO</span></h1>
+        <p class="lead">
+          Willkommen auf meiner offiziellen Hub-Seite! Ich bin TikToker und passionierter Creator. Hier findest du nicht einfach nur langweilige Links, sondern den direkten Zugang zu meinen Community-Servern, meiner Gang und dem offiziellen Shop-Projekt.
+        </p>
+        <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-top: 32px;">
+          <a href="#discords" class="btn btn-primary" style="height: 48px; padding: 0 26px; font-size: 15px;">🚀 Discords auswählen</a>
+          <a href="#stats" class="btn btn-secondary" style="height: 48px; padding: 0 24px; font-size: 15px;">📊 Stats (Coming Soon)</a>
+        </div>
+      </div>
+
+      <!-- Bio / Creator Info Panel -->
+      <div class="bio-panel">
+        <div class="bio-badge">✨ VEXO OFFICIAL BIO</div>
+        <div class="tiktok-handle">
+          @RealVexo
+          <svg class="verified-icon" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+        </div>
+        <p style="color: var(--muted); font-size: 15px; margin-bottom: 20px;">
+          Bekannt von TikTok rund um Gaming, Clips, Community-Vibes und Next-Gen Roblox Tools. Mein Ziel ist es, euch den besten Content und die stärksten Community-Spaces zu bieten!
+        </p>
+        <div style="border-top: 1px solid var(--line-soft); padding-top: 16px; display: flex; justify-content: space-between; font-size: 13px; color: var(--muted);">
+          <span>🔥 Aktiver Creator</span>
+          <b style="color: var(--good);">🟢 Daily Online</b>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Discord Server Section -->
+  <section id="discords" class="wrap">
+    <div class="section-head">
+      <div class="eyebrow">Community & Shop</div>
+      <h2>Das sind meine Discords</h2>
+      <p style="color: var(--muted); font-size: 18px; margin-top: 8px;">
+        Keine einfachen Textlinks – wähle unten deinen Server mit allen Infos und direktem Zugang.
+      </p>
+    </div>
+
+    <div class="dc-grid">
+      <!-- 1. DC: Fuse Eh -->
+      <div class="dc-card">
+        <div>
+          <div class="card-banner banner-1">
+            <span class="banner-tag">⚔️ GANG & COMMUNITY SERVER</span>
+          </div>
+          <h3>1. Fuse Eh</h3>
+          <div class="feature-tags">
+            <span class="feature-tag">👑 Gang Server</span>
+            <span class="feature-tag">🎮 Gaming Sessions</span>
+            <span class="feature-tag">🎥 Clip Feedback</span>
+          </div>
+          <p>
+            Das ist mein offizieller Gang Server <b>Fuse Eh</b>! Hier treffen wir uns zum Zocken, quatschen im Voice, teilen die neuesten TikTok-Clips und bauen eine unvergleichliche Community auf. Sei von Anfang an im inneren Zirkel dabei!
+          </p>
+        </div>
+        <div class="card-actions">
+          <a href="https://discord.gg" target="_blank" class="btn btn-primary" style="flex: 1;">🔥 Gang Server beitreten</a>
+        </div>
+      </div>
+
+      <!-- 2. DC: Void Shop -->
+      <div class="dc-card">
+        <div>
+          <div class="card-banner banner-2">
+            <span class="banner-tag">🛒 ROBLOX MARKETPLACE & TOOLS</span>
+          </div>
+          <h3>2. VOID Shop Server</h3>
+          <div class="feature-tags">
+            <span class="feature-tag">⚡ FastFlags (FFL)</span>
+            <span class="feature-tag">💉 Injector Scripts</span>
+            <span class="feature-tag">🛡️ Anti-Ban</span>
+          </div>
+          <p>
+            Der offizielle <b>Void Shop</b> Server! Hier könnt ihr leistungsstarke FFL (FastFlags) kaufen, exklusive Injector Scripts abstauben, zuverlässige Anti-Ban Tools sichern und vieles mehr. Alles sicher, geprüft und mit Live-Support.
+          </p>
+        </div>
+        <div class="card-actions">
+          <a href="https://discord.gg/S7qpm4edEa" target="_blank" class="btn btn-primary">💬 Zum Void Shop DC</a>
+          <a href="../Void_Shop/void-shop-final/README.md" target="_blank" class="btn btn-secondary">🌐 Webseite & Infos</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Stats Coming Soon Section -->
+  <section id="stats" class="wrap">
+    <div class="stats-shell">
+      <div class="section-head" style="margin-bottom: 10px;">
+        <div class="eyebrow">Tracking</div>
+        <h2>Meine Stats</h2>
+        <p style="color: var(--muted); font-size: 16px; margin-top: 6px;">
+          Das automatisierte Live-Tracking für TikTok und Discord wird derzeit synchronisiert.
+        </p>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <span>TikTok Follower</span>
+          <strong>128,400</strong>
+          <div class="coming-chip"><span class="chip-text">⏳ Coming Soon</span></div>
+        </div>
+        <div class="stat-card">
+          <span>Video Views (Gesamt)</span>
+          <strong>2,450,000</strong>
+          <div class="coming-chip"><span class="chip-text">⏳ Coming Soon</span></div>
+        </div>
+        <div class="stat-card">
+          <span>Fuse Eh Community</span>
+          <strong>1,850+ Members</strong>
+          <div class="coming-chip"><span class="chip-text">⏳ Coming Soon</span></div>
+        </div>
+        <div class="stat-card">
+          <span>Void Shop Verkäufe</span>
+          <strong>500+ Lizenzen</strong>
+          <div class="coming-chip"><span class="chip-text">⏳ Coming Soon</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="wrap">
+    <div class="footer-row">
+      <div><b>VEXO HUB</b> — Offizielle Hub-Seite für TikTok & Community Discords.</div>
+      <div>&copy; 2026 VEXO. Alle Rechte vorbehalten.</div>
+    </div>
+  </footer>
+
+  <script>
+    document.getElementById('themeBtn').addEventListener('click', function() {
+      var cur = document.documentElement.getAttribute('data-theme');
+      var nxt = cur === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', nxt);
+      try { localStorage.setItem('vexo-theme', nxt); } catch(e){}
+    });
+  </script>
+</body>
+</html>
