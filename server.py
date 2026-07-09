@@ -56,6 +56,25 @@ def fetch_tiktok():
     except Exception:
         return None
 
+
+# ---------------------------------------------------------------------------
+# Geo-Erkennung (nur Land, keine Speicherung der IP)
+# ---------------------------------------------------------------------------
+GEO_URL = "https://ipapi.co/{ip}/json/"
+
+def geo_lookup(ip):
+    """Bestimmt das Land aus der IP - ohne die IP zu loggen/speichern."""
+    if not ip:
+        return None
+    try:
+        url = GEO_URL.format(ip=ip)
+        req = urllib.request.Request(url, headers={"User-Agent": "VEXO-Hub/1.0"})
+        with urllib.request.urlopen(req, timeout=3) as r:
+            data = json.load(r)
+        return data.get("country_code")
+    except Exception:
+        return None
+
 # ---------------------------------------------------------------------------
 # Besucherzähler (persistent in visits.json)
 # ---------------------------------------------------------------------------
@@ -91,6 +110,10 @@ def fetch_discord(code):
 # HTTP-Handler
 # ---------------------------------------------------------------------------
 class VexoHandler(http.server.SimpleHTTPRequestHandler):
+    # Datenschutz: IP-Adressen werden NICHT geloggt
+    def log_message(self, format, *args):
+        return
+
     def do_GET(self):
         # Hauptseite ausliefern
         if self.path in ("/", ""):
@@ -101,6 +124,9 @@ class VexoHandler(http.server.SimpleHTTPRequestHandler):
         # JSON-API: Besucherzähler
         if self.path == "/api/visits":
             return self.serve_visits()
+        # JSON-API: Geo -> Sprache (ohne IP zu speichern)
+        if self.path == "/api/geo":
+            return self.serve_geo()
         return super().do_GET()
 
     def _json(self, payload):
@@ -133,6 +159,16 @@ class VexoHandler(http.server.SimpleHTTPRequestHandler):
             n = load_visits() + 1
             save_visits(n)
         return self._json({"visits": n})
+
+    def serve_geo(self):
+        # IP wird NUR kurz zum Bestimmen des Landes genutzt - NIEMALS
+        # geloggt oder persistent gespeichert (Datenschutz).
+        ip = self.headers.get("X-Forwarded-For", "").split(",")[0].strip()
+        if not ip:
+            ip = self.client_address[0] if self.client_address else ""
+        country = geo_lookup(ip)
+        lang = "en" if (country and country.upper() != "DE") else "de"
+        return self._json({"country": country, "lang": lang})
 
 
 if __name__ == "__main__":

@@ -927,26 +927,86 @@
     }
 
     // =====================================================================
-    // EASTER EGG: Konami-Code -> "Fuse Eh!" Sound + Toast
+    // GEO-SPRACHE (Datenschutz: IP wird NICHT geloggt/gespeichert)
     // =====================================================================
-    var konami = ["ArrowUp","ArrowUp","ArrowDown","ArrowDown","ArrowLeft","ArrowRight","ArrowLeft","ArrowRight","b","a"];
-    var pressed = [];
+    fetch("/api/geo")
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (d && d.lang && d.lang !== curLang) applyLang(d.lang);
+      })
+      .catch(function () {});
+
+    // =====================================================================
+    // TASTENKOMBINATIONEN (4 einfache Shortcuts, jeweils eigener Effekt)
+    //   fuse  -> MP3-Sound "Fuse Eh!"
+    //   th    -> Theme wechseln
+    //   party -> Konfetti
+    //   up    -> nach oben scrollen
+    // =====================================================================
     var toast = document.getElementById("toast");
     var toastTimer = null;
     function showToast(msg) {
+      if (!toast) return;
       toast.textContent = msg;
       toast.classList.add("show");
       if (toastTimer) clearTimeout(toastTimer);
       toastTimer = setTimeout(function () { toast.classList.remove("show"); }, 2600);
     }
+    function comboSound() {
+      var a = new Audio("/fuse_eh.mp3");
+      a.play().catch(function () {});
+      showToast("🔥 FUSE EH! 🔥");
+    }
+    function comboTheme() {
+      var cur = document.documentElement.getAttribute("data-theme");
+      applyTheme(cur === "dark" ? "light" : "dark");
+      showToast(cur === "dark" ? "🌞 Hell-Modus" : "🌙 Dunkel-Modus");
+    }
+    function comboTop() {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      showToast("⬆️ Nach oben");
+    }
+    function comboParty() {
+      var emojis = ["🎉","✨","🔥","💜","⭐","🟣"];
+      for (var i = 0; i < 42; i++) {
+        (function () {
+          var s = document.createElement("div");
+          s.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+          s.style.cssText = "position:fixed;left:" + (Math.random() * 90) + "vw;top:" + (8 + Math.random() * 22) + "vh;font-size:" + (14 + Math.random() * 22) + "px;pointer-events:none;z-index:300;transition:transform 1.4s ease-out,opacity 1.4s ease-out;";
+          document.body.appendChild(s);
+          requestAnimationFrame(function () {
+            var dx = (Math.random() - 0.5) * 220;
+            var dy = -(130 + Math.random() * 200);
+            s.style.transform = "translate(" + dx + "px," + dy + "px) rotate(" + (Math.random() * 360) + "deg)";
+            s.style.opacity = "0";
+          });
+          setTimeout(function () { s.remove(); }, 1500);
+        })();
+      }
+      showToast("🎉 PARTY MODE!");
+    }
+
+    var COMBOS = [
+      { seq: "fuse",  action: comboSound },
+      { seq: "th",    action: comboTheme },
+      { seq: "party", action: comboParty },
+      { seq: "up",    action: comboTop }
+    ];
+    var pressedKeys = [];
     document.addEventListener("keydown", function (e) {
-      pressed.push(e.key);
-      if (pressed.length > konami.length) pressed.shift();
-      if (pressed.join(",") === konami.join(",")) {
-        pressed = [];
-        var a = new Audio("/fuse_eh.mp3");
-        a.play().catch(function () {});
-        showToast("🔥 FUSE EH! 🔥");
+      var k = e.key;
+      if (!k || k.length !== 1) return;          // nur einzelne Buchstaben
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+      var ch = k.toLowerCase();
+      pressedKeys.push(ch);
+      if (pressedKeys.length > 8) pressedKeys.shift();
+      for (var i = 0; i < COMBOS.length; i++) {
+        var c = COMBOS[i];
+        if (pressedKeys.slice(-c.seq.length).join("") === c.seq) {
+          c.action();
+          pressedKeys = [];
+          break;
+        }
       }
     });
   })();
