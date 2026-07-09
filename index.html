@@ -161,32 +161,6 @@
       font-weight: 900;
     }
 
-    /* Live-Strip (Countdown / LIVE) */
-    .live-strip {
-      position: sticky; top: 72px; z-index: 40;
-      display: flex; align-items: center; justify-content: center; gap: 12px;
-      padding: 9px 16px; font-size: 14px; font-weight: 800;
-      background: var(--surface); border-bottom: 1px solid var(--line-soft);
-      color: var(--muted);
-    }
-    .live-strip .live-count {
-      font-variant-numeric: tabular-nums; color: var(--ink);
-      background: var(--surface-2); border: 1px solid var(--line);
-      padding: 3px 12px; border-radius: 999px; letter-spacing: 0.04em;
-    }
-    .live-strip.is-live {
-      background: linear-gradient(90deg, rgba(163,60,60,0.18), rgba(163,60,60,0.05));
-      color: var(--bad); border-bottom-color: rgba(163,60,60,0.3);
-    }
-    .live-strip.is-live .live-now-badge {
-      display: inline-flex; align-items: center; gap: 8px;
-      animation: livePulse 1.4s ease-in-out infinite;
-    }
-    .live-strip.is-live #liveWhen,
-    .live-strip.is-live .live-count { display: none; }
-    .live-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--bad); box-shadow: 0 0 10px var(--bad); }
-    .live-now-badge { display: none; }
-
     /* Hero & Bio Section */
     section { padding: 76px 0; }
     .eyebrow {
@@ -220,7 +194,7 @@
     .section-head { margin-bottom: 36px; }
     h2 { font-size: clamp(30px, 4.2vw, 52px); line-height: 1.05; letter-spacing: -0.06em; font-weight: 850; }
 
-    .dc-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(330px, 1fr)); gap: 26px; }
+    .dc-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 330px), 1fr)); gap: 26px; }
 
     .dc-card {
       background: var(--surface); border: 1px solid var(--line); border-radius: 32px;
@@ -278,7 +252,7 @@
       background: var(--surface); border: 1px solid var(--line); border-radius: 34px;
       padding: 40px; box-shadow: var(--shadow); position: relative; overflow: hidden;
     }
-    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 18px; margin-top: 28px; }
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr)); gap: 18px; margin-top: 28px; }
     .stat-card {
       background: var(--surface-2); border: 1px solid var(--line); border-radius: 22px;
       padding: 24px; position: relative; overflow: hidden;
@@ -320,39 +294,17 @@
     .faq-item[open] summary:after { transform: rotate(45deg); }
     .faq-item .faq-answer { padding: 0 24px 22px; color: var(--muted); font-size: 16px; line-height: 1.6; }
 
-    /* Testimonials (Comic-Stil) */
-    .tm-carousel { display: flex; align-items: center; gap: 16px; margin-top: 28px; }
-    .tm-nav {
-      flex: 0 0 auto; width: 48px; height: 48px; border-radius: 50%;
-      border: 1px solid var(--line); background: var(--surface); color: var(--ink);
-      font-size: 24px; line-height: 1; transition: 0.18s ease;
+    /* Testimonials (Coming Soon) */
+    .coming-soon-card {
+      position: relative; overflow: hidden;
+      background: var(--surface-2); border: 1px solid var(--line); border-radius: 22px;
+      padding: 56px 24px; text-align: center; color: var(--muted);
+      font-size: 18px; font-weight: 800;
     }
-    .tm-nav:hover { border-color: var(--accent); transform: translateY(-2px); }
-    .tm-viewport { flex: 1; overflow: hidden; }
-    .tm-card {
-      display: none; background: var(--surface); border: 1px solid var(--line);
-      border-radius: 26px; padding: 30px 34px 32px; box-shadow: var(--shadow);
-      position: relative; text-align: left;
-    }
-    .tm-card.active { display: block; animation: fadeIn 0.5s ease; }
-    .tm-card:before {
-      content: ""; position: absolute; top: -12px; left: 40px;
-      border: 12px solid transparent; border-bottom-color: var(--surface);
-      filter: drop-shadow(0 -1px 0 var(--line));
-    }
-    .tm-avatar {
-      width: 56px; height: 56px; border-radius: 50%; display: grid; place-items: center;
-      font-size: 28px; background: linear-gradient(135deg, var(--c1, #8b6f47), var(--c2, #2f7d55));
-      border: 3px solid var(--bg); box-shadow: 0 8px 20px rgba(0,0,0,0.18); margin-bottom: 16px;
-    }
-    .tm-quote { font-size: 19px; font-weight: 600; line-height: 1.55; color: var(--ink); }
-    .tm-author { margin-top: 16px; font-weight: 800; color: var(--accent); font-size: 14px; letter-spacing: 0.02em; }
-    .tm-dots { display: flex; gap: 8px; justify-content: center; margin-top: 20px; }
-    .tm-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--line); cursor: pointer; transition: 0.2s ease; }
-    .tm-dot.active { background: var(--accent); width: 24px; border-radius: 999px; }
+    .coming-soon-card .cs-emoji { font-size: 42px; margin-bottom: 12px; }
 
     /* Ideen-Board */
-    .idea-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 18px; margin-top: 28px; }
+    .idea-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); gap: 18px; margin-top: 28px; }
     .idea-card { background: var(--surface); border: 1px solid var(--line); border-radius: 20px; padding: 22px; transition: 0.22s cubic-bezier(0.16,1,0.3,1); }
     .idea-card:hover { transform: translateY(-5px); border-color: var(--accent); box-shadow: 0 18px 40px rgba(0,0,0,0.25); }
     .idea-ico { font-size: 30px; margin-bottom: 8px; }
@@ -377,9 +329,22 @@
     .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
     @media (max-width: 860px) {
-      .hero-grid, .dc-grid { grid-template-columns: 1fr; }
+      .hero-grid { grid-template-columns: 1fr; gap: 32px; }
+      .dc-grid { grid-template-columns: 1fr; }
       .links { display: none; }
-      .live-strip { top: 72px; }
+    }
+    @media (max-width: 600px) {
+      .wrap { width: calc(100% - 24px); }
+      section { padding: 56px 0; }
+      .hero { padding: 56px 0 40px; }
+      .stats-shell { padding: 24px; }
+      .dc-card, .stat-card, .idea-card, .coming-soon-card { padding: 22px; }
+      .bio-panel { padding: 22px; }
+      .nav-actions .btn-primary { display: none; }
+      .footer-row { flex-direction: column; align-items: flex-start; gap: 14px; }
+      .idea-grid { grid-template-columns: 1fr; }
+      .dc-grid { grid-template-columns: 1fr; }
+      h2 { font-size: clamp(26px, 8vw, 40px); }
     }
   </style>
 </head>
@@ -414,13 +379,6 @@
       </div>
     </div>
   </header>
-
-  <!-- Live-Strip: Wann ist die nächste Live? / LIVE -->
-  <div class="live-strip" id="liveStrip">
-    <span id="liveWhen">Nächster Live: …</span>
-    <span class="live-count" id="liveCountdown">--:--:--</span>
-    <span class="live-now-badge"><span class="live-dot"></span><span data-i18n="live.now">🔴 LIVE JETZT</span></span>
-  </div>
 
   <!-- Hero & Wer ich bin -->
   <section id="about" class="hero wrap">
@@ -594,34 +552,17 @@
     </div>
   </section>
 
-  <!-- Testimonials Section (Comic-Stil) -->
+  <!-- Testimonials Section (Coming Soon) -->
   <section id="community" class="wrap">
     <div class="section-head">
       <div class="eyebrow" data-i18n="tm.eyebrow">Community</div>
       <h2 data-i18n="tm.title">Was die Community sagt</h2>
     </div>
-    <div class="tm-carousel">
-      <button class="tm-nav" id="tmPrev" aria-label="Vorheriges">‹</button>
-      <div class="tm-viewport">
-        <div class="tm-card active">
-          <div class="tm-avatar" style="--c1:#c1a16d;--c2:#8b6f47">🎮</div>
-          <p class="tm-quote" data-i18n="tm.q1">„Fuse Eh ist der beste Gang-Server, hier trifft man immer jemanden zum Zocken.“</p>
-          <div class="tm-author">@player_one</div>
-        </div>
-        <div class="tm-card">
-          <div class="tm-avatar" style="--c1:#73c995;--c2:#2f7d55">🛡️</div>
-          <p class="tm-quote" data-i18n="tm.q2">„Die Free FFlags aus dem Community-Server sind top, laufen stabil und ohne Ban.“</p>
-          <div class="tm-author">@robloxfan</div>
-        </div>
-        <div class="tm-card">
-          <div class="tm-avatar" style="--c1:#d3a55c;--c2:#9c6b24">⚡</div>
-          <p class="tm-quote" data-i18n="tm.q3">„Void Shop Support ist mega schnell, mein Injector lief sofort.“</p>
-          <div class="tm-author">@clipper</div>
-        </div>
-      </div>
-      <button class="tm-nav" id="tmNext" aria-label="Nächstes">›</button>
+    <div class="coming-soon-card">
+      <div class="cs-emoji">🗣️</div>
+      <div data-i18n="tm.soon">Stimmen der Community folgen bald…</div>
+      <div class="coming-chip"><span class="chip-text" data-i18n="coming">⏳ Coming Soon</span></div>
     </div>
-    <div class="tm-dots" id="tmDots"></div>
   </section>
 
   <!-- Ideen Section -->
@@ -728,7 +669,7 @@
         "faq.a2": "Tritt einfach dem VEXO Community Server bei – dort verteilen wir regelmäßig kostenlose FastFlags und Injector für alle Mitglieder.",
         "faq.q3": "Wann streamst du live?",
         "faq.a3": "Meistens abends auf TikTok. Sobald ein Stream live geht, leuchtet der 🔴 LIVE-Badge oben auf der Seite.",
-        "tm.eyebrow": "Community", "tm.title": "Was die Community sagt",
+        "tm.eyebrow": "Community", "tm.title": "Was die Community sagt", "tm.soon": "Stimmen der Community folgen bald…",
         "tm.q1": "„Fuse Eh ist der beste Gang-Server, hier trifft man immer jemanden zum Zocken.“",
         "tm.q2": "„Die Free FFlags aus dem Community-Server sind top, laufen stabil und ohne Ban.“",
         "tm.q3": "„Void Shop Support ist mega schnell, mein Injector lief sofort.“",
@@ -785,7 +726,7 @@
         "faq.a2": "Just join the VEXO Community Server – we regularly drop free FastFlags and injectors for all members.",
         "faq.q3": "When do you stream live?",
         "faq.a3": "Mostly in the evenings on TikTok. As soon as a stream goes live, the 🔴 LIVE badge lights up at the top of the page.",
-        "tm.eyebrow": "Community", "tm.title": "What the community says",
+        "tm.eyebrow": "Community", "tm.title": "What the community says", "tm.soon": "Community voices coming soon…",
         "tm.q1": "„Fuse Eh is the best gang server, you always find someone to play with.“",
         "tm.q2": "„The free FFlags from the community server are top, run stable and ban-free.“",
         "tm.q3": "„Void Shop support is super fast, my injector worked instantly.“",
@@ -885,67 +826,6 @@
         if (s) navObserver.observe(s);
       });
     }
-
-    // =====================================================================
-    // LIVE-STRIP: Wann ist die nächste Live? / LIVE-Badge
-    // =====================================================================
-    var liveStrip = document.getElementById("liveStrip");
-    var liveWhen = document.getElementById("liveWhen");
-    var liveCountdown = document.getElementById("liveCountdown");
-    function fmtNextDate(d) {
-      try {
-        return new Intl.DateTimeFormat(curLang === "de" ? "de-DE" : "en-US",
-          { weekday: "short", day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }
-        ).format(d);
-      } catch (e) { return d.toISOString(); }
-    }
-    function tickCountdown() {
-      var target = new Date(CONFIG.nextStream);
-      var isLive = CONFIG.liveNow || target.getTime() <= Date.now();
-      if (isLive) {
-        liveStrip.classList.add("is-live");
-        liveCountdown.textContent = "";
-        return;
-      }
-      liveStrip.classList.remove("is-live");
-      liveWhen.textContent = (curLang === "de" ? "Nächster Live: " : "Next live: ") + fmtNextDate(target);
-      var diff = target.getTime() - Date.now();
-      var s = Math.max(0, Math.floor(diff / 1000));
-      var h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), sec = s % 60;
-      liveCountdown.textContent =
-        String(h).padStart(2, "0") + ":" + String(m).padStart(2, "0") + ":" + String(sec).padStart(2, "0");
-    }
-    tickCountdown();
-    setInterval(tickCountdown, 1000);
-
-    // =====================================================================
-    // TESTIMONIALS-KARUSSELL
-    // =====================================================================
-    var slides = Array.prototype.slice.call(document.querySelectorAll(".tm-card"));
-    var dotsWrap = document.getElementById("tmDots");
-    var tmIdx = 0, tmTimer = null;
-    slides.forEach(function (_, i) {
-      var d = document.createElement("button");
-      d.className = "tm-dot" + (i === 0 ? " active" : "");
-      d.setAttribute("aria-label", "Zu Stimme " + (i + 1));
-      d.addEventListener("click", function () { showTM(i); resetTM(); });
-      dotsWrap.appendChild(d);
-    });
-    var dots = Array.prototype.slice.call(dotsWrap.children);
-    function showTM(i) {
-      tmIdx = (i + slides.length) % slides.length;
-      slides.forEach(function (s, k) { s.classList.toggle("active", k === tmIdx); });
-      dots.forEach(function (d, k) { d.classList.toggle("active", k === tmIdx); });
-    }
-    function nextTM() { showTM(tmIdx + 1); }
-    function prevTM() { showTM(tmIdx - 1); }
-    function resetTM() { if (tmTimer) clearInterval(tmTimer); tmTimer = setInterval(nextTM, 5000); }
-    document.getElementById("tmNext").addEventListener("click", function () { nextTM(); resetTM(); });
-    document.getElementById("tmPrev").addEventListener("click", function () { prevTM(); resetTM(); });
-    var tmViewport = document.querySelector(".tm-viewport");
-    if (tmViewport) tmViewport.addEventListener("mouseenter", function () { if (tmTimer) clearInterval(tmTimer); });
-    if (tmViewport) tmViewport.addEventListener("mouseleave", resetTM);
-    resetTM();
 
     // =====================================================================
     // LIVE-STATS (Discord, echt & live) + COUNT-UP
