@@ -334,8 +334,136 @@
     }
     .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
+    /* ===== NEUE ANIMATIONEN & LIVE-STATUS (Style-konform) ===== */
+
+    /* Scroll-Reveal mit Stagger */
+    .reveal {
+      opacity: 0;
+      transform: translateY(26px) scale(0.99);
+      transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+      transition-delay: calc(var(--i, 0) * 70ms);
+    }
+    .reveal.in { opacity: 1; transform: none; }
+
+    /* Hintergrund-Orbs (subtil, Theme-Farben) */
+    .fx-orbs { position: fixed; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; }
+    .fx-orbs span { position: absolute; border-radius: 50%; filter: blur(60px); opacity: 0.45; }
+    .fx-orb-1 { width: 440px; height: 440px; top: -140px; left: -90px; background: radial-gradient(circle at 30% 30%, var(--accent), transparent 70%); animation: orbFloat 18s ease-in-out infinite; }
+    .fx-orb-2 { width: 380px; height: 380px; bottom: -150px; right: -70px; background: radial-gradient(circle at 30% 30%, var(--good), transparent 70%); animation: orbFloat 22s ease-in-out infinite reverse; }
+    .fx-orb-3 { width: 320px; height: 320px; top: 42%; left: 58%; background: radial-gradient(circle at 30% 30%, var(--warn), transparent 70%); animation: orbFloat 27s ease-in-out infinite; }
+    @keyframes orbFloat {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      33% { transform: translate(46px, -34px) scale(1.08); }
+      66% { transform: translate(-32px, 22px) scale(0.94); }
+    }
+
+    /* Hero-Gradient-Text */
+    h1 .grad {
+      background: linear-gradient(100deg, var(--accent), var(--good), var(--accent));
+      background-size: 220% auto; -webkit-background-clip: text; background-clip: text;
+      color: var(--accent); -webkit-text-fill-color: transparent;
+      animation: gradShift 6s linear infinite;
+    }
+    @keyframes gradShift { to { background-position: 220% center; } }
+
+    /* LIVE-Badge */
+    .live-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: linear-gradient(120deg, var(--bad), #d47878);
+      color: #fff; padding: 6px 14px; border-radius: 999px;
+      font-weight: 900; font-size: 13px; letter-spacing: 0.06em;
+      box-shadow: 0 10px 26px rgba(163, 60, 60, 0.35);
+    }
+    .live-badge .dot {
+      width: 9px; height: 9px; border-radius: 50%; background: #fff;
+      animation: livePulse 1.4s ease-in-out infinite;
+    }
+    @keyframes livePulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7); }
+      50% { box-shadow: 0 0 0 8px rgba(255, 255, 255, 0); }
+    }
+    .live-off {
+      display: inline-flex; align-items: center; gap: 8px;
+      color: var(--muted-2); font-size: 13px; font-weight: 800;
+      background: var(--surface-2); border: 1px solid var(--line-soft);
+      padding: 6px 14px; border-radius: 999px;
+    }
+    .tk-live { min-height: 0; }
+
+    /* Floating LIVE-Pill oben (über Inhalt, unter Nav) */
+    .live-float {
+      position: fixed; top: 84px; right: 18px; z-index: 60;
+      display: none; animation: bounceIn 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .live-float.show { display: inline-flex; }
+    @keyframes bounceIn {
+      from { opacity: 0; transform: translateY(-12px) scale(0.9); }
+      to { opacity: 1; transform: none; }
+    }
+
+    /* Discord-Karten Live-Zeile (Online + Mitglieder) */
+    .dc-live {
+      display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+      margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--line-soft);
+      font-size: 14px; font-weight: 800; color: var(--muted);
+    }
+    .dc-live .pill {
+      display: inline-flex; align-items: center; gap: 7px;
+      background: var(--surface-2); border: 1px solid var(--line-soft);
+      padding: 6px 12px; border-radius: 999px; color: var(--ink);
+      font-variant-numeric: tabular-nums;
+    }
+    .dc-live .online-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--good); box-shadow: 0 0 0 0 rgba(115, 201, 149, 0.6); animation: livePulse 1.8s ease-in-out infinite; }
+    .dc-live .online-dot.none { background: var(--muted-2); opacity: 0.6; animation: none; box-shadow: none; }
+
+    /* Stat-Karte: Live-Subline + animierter Rahmen */
+    .stat-sub { margin-top: 6px; font-size: 14px; font-weight: 800; color: var(--good); font-variant-numeric: tabular-nums; }
+    .stat-card:not(.live) .stat-sub { display: none; }
+    .stat-card::before {
+      content: ""; position: absolute; inset: -1px; border-radius: 23px; padding: 1px;
+      background: linear-gradient(120deg, transparent 30%, rgba(217, 200, 168, 0.7), rgba(115, 201, 149, 0.55), transparent 78%);
+      background-size: 250% 250%; -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor; mask-composite: exclude; opacity: 0.45;
+      animation: borderFlow 4.5s linear infinite; pointer-events: none;
+    }
+
+    /* Button Shine-Sweep beim Hover */
+    .btn { position: relative; overflow: hidden; }
+    .btn::after {
+      content: ""; position: absolute; top: 0; left: -120%; width: 60%; height: 100%;
+      background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.35), transparent);
+      transform: skewX(-20deg); transition: none;
+    }
+    .btn:hover::after { animation: shine 0.7s ease; }
+    @keyframes shine { to { left: 130%; } }
+
+    /* Nav-Link Unterstrich wächst */
+    .links a { position: relative; }
+    .links a::after {
+      content: ""; position: absolute; left: 15px; right: 15px; bottom: 4px; height: 2px;
+      background: var(--accent); transform: scaleX(0); transform-origin: center; transition: transform 0.25s ease;
+    }
+    .links a:hover::after, .links a.active::after { transform: scaleX(1); }
+
+    /* Icon-Toggle Druck-Feedback */
+    .icon-toggle:active { transform: scale(0.94); }
+
+    /* Idea-Icon schwebt */
+    .idea-ico { animation: floatY 4s ease-in-out infinite; }
+    @keyframes floatY { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+
+    /* Brand-Mark dreht beim Hover */
+    .mark:hover { animation: spin 0.8s ease; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* FAQ-Summary Hover */
+    .faq-item summary:hover { background: var(--surface-2); }
+
     @media (prefers-reduced-motion: reduce) {
       * { animation: none !important; transition: none !important; }
+      .reveal { opacity: 1 !important; transform: none !important; }
+      .fx-orbs { display: none !important; }
+      .btn::after, .stat-card::before, .links a::after { display: none !important; }
     }
     @media (max-width: 860px) {
       .hero-grid { grid-template-columns: 1fr; gap: 32px; }
@@ -360,6 +488,16 @@
 <body>
 
   <div class="progress-bar" id="progress"></div>
+
+  <!-- Animierte Hintergrund-Orbs (subtil, Theme-Farben) -->
+  <div class="fx-orbs" aria-hidden="true">
+    <span class="fx-orb-1"></span>
+    <span class="fx-orb-2"></span>
+    <span class="fx-orb-3"></span>
+  </div>
+
+  <!-- Floating LIVE-Pill (nur bei echtem Live via Webhook) -->
+  <div class="live-float live-badge" id="liveFloat"><span class="dot"></span><span id="liveFloatText">LIVE</span></div>
 
   <!-- Navigation -->
   <header class="nav-shell">
@@ -394,7 +532,7 @@
     <div class="hero-grid">
       <div>
         <div class="eyebrow" data-i18n="hero.eyebrow">🎬 Content Creator & TikToker</div>
-        <h1><span data-i18n="hero.title1">Hey, ich bin</span> <span style="color: var(--accent);">VEXO</span></h1>
+        <h1><span data-i18n="hero.title1">Hey, ich bin</span> <span class="grad">VEXO</span></h1>
         <p class="lead" data-i18n="hero.lead">
           Willkommen auf meiner offiziellen Hub-Seite! Ich bin TikToker und Notruf Hamburg Player. Hier findest du nicht einfach nur langweilige Links, sondern den direkten Zugang zu meinen Community-Servern, meiner Gang und dem offiziellen Shop-Projekt.
         </p>
@@ -417,6 +555,7 @@
         <p style="color: var(--muted); font-size: 15px; margin-bottom: 20px;" data-i18n="bio.text">
           Bekannt von TikTok rund um Gaming, Clips, Community-Vibes und Next-Gen Roblox Tools. Mein Ziel ist es, euch den besten Content!
         </p>
+        <div class="tk-live" id="tkLive" style="margin-bottom: 14px;"></div>
         <div style="border-top: 1px solid var(--line-soft); padding-top: 16px; display: flex; justify-content: space-between; font-size: 13px; color: var(--muted);">
           <span data-i18n="bio.status1">🔥 Aktiver Creator</span>
           <b style="color: var(--good);" data-i18n="bio.status2">🟢 Daily Online</b>
@@ -452,6 +591,10 @@
             Das ist mein offizieller Gang Server <b>Fuse Eh</b>! Hier machen wir Gang Fights und mehr du kannst dich selber verbessern und eine aktive Community ist für dich da und spielt mit dir!
           </p>
         </div>
+        <div class="dc-live" data-dc="fuseEh">
+          <span class="pill"><span class="online-dot" data-online-dot></span><span data-online>—</span> <span data-i18n="dc.online">online</span></span>
+          <span class="pill"><span data-members>—</span> <span data-i18n="dc.members">Mitglieder</span></span>
+        </div>
         <div class="card-actions">
           <a href="https://discord.gg/U2XGV5jaAr" target="_blank" class="btn btn-primary" style="flex: 1;" data-i18n="c1.btn">🔥 Gang Server beitreten</a>
         </div>
@@ -472,6 +615,10 @@
           <p data-i18n="c2.desc">
             Der offizielle <b>Void Shop</b> Server! Hier könnt ihr leistungsstarke FFL (FastFlags) kaufen, exklusive Injector,Scripts die nur für ui verbesserungen sind, zuverlässige Anti-Ban Tools sichern und vieles mehr. Alles sicher, geprüft und mit Live-Support.
           </p>
+        </div>
+        <div class="dc-live" data-dc="voidShop">
+          <span class="pill"><span class="online-dot" data-online-dot></span><span data-online>—</span> <span data-i18n="dc.online">online</span></span>
+          <span class="pill"><span data-members>—</span> <span data-i18n="dc.members">Mitglieder</span></span>
         </div>
         <div class="card-actions">
           <a href="https://discord.gg/h83FkGxhps" target="_blank" class="btn btn-primary" data-i18n="c2.btn1">💬 Zum Void Shop DC</a>
@@ -496,6 +643,10 @@
             Der offizielle <b>VEXO Community Server</b>! Hier erhaltet ihr kostenlose FFlags, Free Injectors, Live Pings zu neuen Updates & Events und könnt euch rund um die Uhr mit der gesamten Community austauschen.
           </p>
         </div>
+        <div class="dc-live" data-dc="community">
+          <span class="pill"><span class="online-dot" data-online-dot></span><span data-online>—</span> <span data-i18n="dc.online">online</span></span>
+          <span class="pill"><span data-members>—</span> <span data-i18n="dc.members">Mitglieder</span></span>
+        </div>
         <div class="card-actions">
           <a href="https://discord.gg/39dqMvXCnc" target="_blank" class="btn btn-primary" style="flex: 1;" data-i18n="c3.btn">💬 Community Server beitreten</a>
         </div>
@@ -518,21 +669,25 @@
         <div class="stat-card" id="card-tiktok" style="display:none">
           <span data-i18n="stat1.label">TikTok Follower</span>
           <strong data-stat="tiktok_followers">—</strong>
+          <div class="stat-sub" data-stat-sub="tiktok_followers"></div>
           <div class="coming-chip"><span class="chip-text" data-i18n="coming">⏳ Coming Soon</span></div>
         </div>
         <div class="stat-card" id="card-fuseEh">
           <span data-i18n="stat2.label">Fuse Eh Community</span>
           <strong data-stat="fuseEh">—</strong>
+          <div class="stat-sub" data-stat-sub="fuseEh"></div>
           <div class="coming-chip"><span class="chip-text" data-i18n="coming">⏳ Coming Soon</span></div>
         </div>
         <div class="stat-card" id="card-voidShop">
           <span data-i18n="stat3.label">Void Shop Members</span>
           <strong data-stat="voidShop">—</strong>
+          <div class="stat-sub" data-stat-sub="voidShop"></div>
           <div class="coming-chip"><span class="chip-text" data-i18n="coming">⏳ Coming Soon</span></div>
         </div>
         <div class="stat-card" id="card-community">
           <span data-i18n="stat4.label">VEXO Community</span>
           <strong data-stat="community">—</strong>
+          <div class="stat-sub" data-stat-sub="community"></div>
           <div class="coming-chip"><span class="chip-text" data-i18n="coming">⏳ Coming Soon</span></div>
         </div>
       </div>
@@ -691,6 +846,9 @@
         "footer.left": "<b>VEXO HUB</b> — Offizielle Hub-Seite für TikTok & Community Discords.",
         "footer.right": "© 2026 VEXO. Alle Rechte vorbehalten. Made by Fufi",
         "footer.affiliate": "ℹ️ Affiliate-/Partner-Hinweis: Einige Links können Partnerlinks sein. Verlinkte Shops/Discords sind externe Angebote.",
+        "live.off": "📴 Aktuell kein Live",
+        "dc.online": "online",
+        "dc.members": "Mitglieder",
         "visits.label": "Aufrufe"
       },
       en: {
@@ -739,6 +897,9 @@
         "footer.left": "<b>VEXO HUB</b> — Official hub page for TikTok & community Discords.",
         "footer.right": "© 2026 VEXO. All rights reserved. Made by Fufi",
         "footer.affiliate": "ℹ️ Affiliate/partner note: some links may be partner links. Linked shops/Discords are external offers.",
+        "live.off": "📴 No live right now",
+        "dc.online": "online",
+        "dc.members": "members",
         "visits.label": "visits"
       },
       es: {
@@ -787,6 +948,9 @@
         "footer.left": "<b>VEXO HUB</b> — Sitio oficial para TikTok y Discords de comunidad.",
         "footer.right": "© 2026 VEXO. Todos los derechos reservados. Made by Fufi",
         "footer.affiliate": "ℹ️ Aviso de afiliados/socios: algunos enlaces pueden ser enlaces de socios. Las tiendas/Discords enlazados son ofertas externas.",
+        "live.off": "📴 Sin directo ahora",
+        "dc.online": "en línea",
+        "dc.members": "miembros",
         "visits.label": "visitas"
       },
       fr: {
@@ -835,6 +999,9 @@
         "footer.left": "<b>VEXO HUB</b> — Site officiel pour TikTok & les Discords communautaires.",
         "footer.right": "© 2026 VEXO. Tous droits réservés. Made by Fufi",
         "footer.affiliate": "ℹ️ Avis affilié/partenaire : certains liens peuvent être des liens partenaires. Les boutiques/Discords liés sont des offres externes.",
+        "live.off": "📴 Aucun live en ce moment",
+        "dc.online": "en ligne",
+        "dc.members": "membres",
         "visits.label": "visites"
       }
     };
@@ -867,6 +1034,10 @@
       if (sel) sel.value = lang;
       updateLangUrl(lang);
       try { localStorage.setItem("vexo-lang", lang); } catch (e) {}
+      if (lastStatsData) {
+        fillDcLive(lastStatsData.discord || {});
+        renderTikTok(lastStatsData.tiktok);
+      }
     }
     function buildLangSelect() {
       var sel = document.getElementById("langSelect");
@@ -958,6 +1129,24 @@
     }
 
     // =====================================================================
+    // SCROLL-REVEAL (Stagger) – nur sichtbare Elemente einblenden
+    // =====================================================================
+    (function revealSetup() {
+      var targets = document.querySelectorAll(".section-head, .stats-shell, .coming-soon-card");
+      if (!("IntersectionObserver" in window) || !targets.length) return;
+      targets.forEach(function (el) { el.classList.add("reveal"); });
+      var rObs = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) {
+          if (e.isIntersecting) { e.target.classList.add("in"); rObs.unobserve(e.target); }
+        });
+      }, { threshold: 0.12 });
+      targets.forEach(function (el, i) {
+        el.style.setProperty("--i", i % 8);
+        rObs.observe(el);
+      });
+    })();
+
+    // =====================================================================
     // INTERAKTIVER HERO (dezenter Maus-Parallax)
     // =====================================================================
     (function heroParallax() {
@@ -982,11 +1171,19 @@
     // LIVE-STATS (Discord, echt & live) + COUNT-UP
     // REGEL: NIEMALS Fake-Zahlen. TikTok ohne echte Quelle -> Karte aus.
     // =====================================================================
+    var lastStatsData = null;
+
     var statMap = {
       tiktok_followers: document.querySelector('[data-stat="tiktok_followers"]'),
       fuseEh: document.querySelector('[data-stat="fuseEh"]'),
       voidShop: document.querySelector('[data-stat="voidShop"]'),
       community: document.querySelector('[data-stat="community"]')
+    };
+    var statSubMap = {
+      tiktok_followers: document.querySelector('[data-stat-sub="tiktok_followers"]'),
+      fuseEh: document.querySelector('[data-stat-sub="fuseEh"]'),
+      voidShop: document.querySelector('[data-stat-sub="voidShop"]'),
+      community: document.querySelector('[data-stat-sub="community"]')
     };
     function countUp(el, target) {
       var start = null, dur = 1600;
@@ -1016,15 +1213,67 @@
       }
       card.classList.add("live");
       statValues[k] = v;
-      if (statsRevealed) countUp(el, v);
+      if (statsRevealed) el.textContent = fmt(v);
       else el.textContent = fmt(0);
     }
 
+    // ---- Discord: Online + Mitglieder auf den 3 Karten + Stats-Subline ----
+    function fillDcLive(discord) {
+      var t = I18N[curLang] || I18N.en;
+      Object.keys(discord || {}).forEach(function (key) {
+        var d = discord[key] || {};
+        var row = document.querySelector('.dc-live[data-dc="' + key + '"]');
+        if (row) {
+          var onlineEl = row.querySelector("[data-online]");
+          var membersEl = row.querySelector("[data-members]");
+          var dot = row.querySelector("[data-online-dot]");
+          if (onlineEl) onlineEl.textContent = (d.online != null) ? fmt(d.online) : "—";
+          if (membersEl) membersEl.textContent = (d.members != null) ? fmt(d.members) : "—";
+          if (dot) dot.classList.toggle("none", !(d.online != null && d.online > 0));
+        }
+        var sub = statSubMap[key];
+        if (sub) {
+          sub.textContent = (d.online != null)
+            ? (fmt(d.online) + " " + (t["dc.online"] || "online"))
+            : "";
+        }
+      });
+    }
+
+    // ---- TikTok Live-Badge (NUR bei echtem Webhook/Live, nie Fake) ----
+    function renderTikTok(tiktok) {
+      var tkLive = document.getElementById("tkLive");
+      var liveFloat = document.getElementById("liveFloat");
+      var liveFloatText = document.getElementById("liveFloatText");
+      var tkCard = document.getElementById("card-tiktok");
+      var t = I18N[curLang] || I18N.en;
+      if (tiktok && tiktok.live_now) {
+        var viewers = (tiktok.live_viewers != null)
+          ? (" · " + fmt(tiktok.live_viewers) + " " + (t["tiktok.viewers"] || "viewers"))
+          : "";
+        if (tkLive) tkLive.innerHTML = '<span class="live-badge"><span class="dot"></span>' + (t["live.now"] || "LIVE") + viewers + "</span>";
+        if (liveFloat && liveFloatText) {
+          liveFloatText.textContent = (t["live.now"] || "LIVE") + viewers;
+          liveFloat.classList.add("show");
+        }
+        if (tkCard) {
+          var sub = tkCard.querySelector("[data-stat-sub]");
+          if (sub && tiktok.live_viewers != null) sub.textContent = fmt(tiktok.live_viewers) + " " + (t["tiktok.viewers"] || "viewers");
+        }
+      } else {
+        if (tkLive) tkLive.innerHTML = '<span class="live-off">📴 ' + (t["live.off"] || "Offline") + "</span>";
+        if (liveFloat) liveFloat.classList.remove("show");
+      }
+    }
+
     function fillStats(data) {
+      lastStatsData = data;
       var discord = (data && data.discord) || {};
       renderStat("fuseEh", discord.fuseEh && discord.fuseEh.members);
       renderStat("voidShop", discord.voidShop && discord.voidShop.members);
       renderStat("community", discord.community && discord.community.members);
+
+      fillDcLive(discord);
 
       var tiktok = data && data.tiktok;
       var tkCard = document.getElementById("card-tiktok");
@@ -1034,6 +1283,7 @@
       } else if (tkCard) {
         tkCard.style.display = "none";
       }
+      renderTikTok(tiktok);
     }
 
     if ("IntersectionObserver" in window) {
@@ -1053,10 +1303,14 @@
       if (statsSec) statObserver.observe(statsSec);
     }
 
-    fetch("/api/stats")
-      .then(function (r) { return r.json(); })
-      .then(fillStats)
-      .catch(function () {});
+    function refreshStats() {
+      fetch("/api/stats")
+        .then(function (r) { return r.json(); })
+        .then(fillStats)
+        .catch(function () {});
+    }
+    refreshStats();
+    setInterval(refreshStats, 60000); // echte Online-Zahlen live halten (Discord API)
 
     // =====================================================================
     // BESUCHERZÄHLER (echte Requests)
