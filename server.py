@@ -62,6 +62,39 @@ def fetch_tiktok():
 # ---------------------------------------------------------------------------
 GEO_URL = "https://ipapi.co/{ip}/json/"
 
+# Land -> Sprache (auto-detect). Deckt die haeufigsten Laender ab; alle
+# 50 unterstuetzten Sprachen sind ueber SUPPORTED_LANGS im Frontend erreichbar.
+# Unbekannte Laender -> "en" (Fallback).
+COUNTRY_TO_LANG = {
+    "DE": "de", "AT": "de", "CH": "de", "LI": "de", "LU": "de",
+    "AD": "ca", "ES": "es", "MX": "es", "AR": "es", "CO": "es", "CL": "es",
+    "PE": "es", "VE": "es", "EC": "es", "UY": "es", "BO": "es", "PY": "es",
+    "CR": "es", "DO": "es", "GT": "es", "HN": "es", "SV": "es", "NI": "es",
+    "PA": "es", "CU": "es", "PR": "es", "GQ": "es",
+    "FR": "fr", "CA": "fr", "MC": "fr", "SN": "fr", "CI": "fr", "ML": "fr",
+    "BF": "fr", "NE": "fr", "TG": "fr", "BJ": "fr", "CD": "fr", "CG": "fr",
+    "GA": "fr", "CM": "fr", "CF": "fr", "TD": "fr", "GN": "fr", "MU": "fr",
+    "IT": "it", "SM": "it", "VA": "it",
+    "PT": "pt", "BR": "pt", "AO": "pt", "MZ": "pt", "GW": "pt", "CV": "pt", "ST": "pt",
+    "NL": "nl", "SR": "nl", "AW": "nl",
+    "EN": "en", "US": "en", "GB": "en", "AU": "en", "IE": "en", "NZ": "en",
+    "ZA": "en", "KE": "en", "NG": "en", "GH": "en", "TZ": "en", "UG": "en",
+    "ZM": "en", "ZW": "en", "ET": "en", "LK": "en", "SG": "en", "NA": "en",
+    "BW": "en", "MW": "en", "JM": "en", "BS": "en", "BB": "en", "TT": "en",
+    "IN": "hi", "JP": "ja", "KR": "ko", "CN": "zh", "TW": "zh", "HK": "zh", "MO": "zh",
+    "RU": "ru", "BY": "ru", "KZ": "kk", "UZ": "ru",
+    "AM": "am", "GE": "ka", "AZ": "az", "UA": "uk",
+    "TR": "tr", "SA": "ar", "AE": "ar", "EG": "ar", "MA": "ar", "DZ": "ar",
+    "TN": "ar", "IQ": "ar", "SY": "ar", "JO": "ar", "LB": "ar", "KW": "ar",
+    "QA": "ar", "OM": "ar", "YE": "ar", "PS": "ar", "LY": "ar", "SD": "ar", "BH": "ar",
+    "IR": "fa", "AF": "fa", "IL": "he", "PK": "ur", "BD": "bn",
+    "TH": "th", "VN": "vi", "ID": "id", "MY": "ms", "PH": "fil",
+    "PL": "pl", "CZ": "cs", "SK": "sk", "HU": "hu", "RO": "ro", "BG": "bg",
+    "GR": "el", "CY": "el", "HR": "hr", "RS": "sr", "BA": "sr", "ME": "sr",
+    "SI": "sl", "MK": "mk", "AL": "sq", "LT": "lt", "LV": "lv", "EE": "et",
+    "FI": "fi", "SE": "sv", "NO": "no", "DK": "da", "IS": "en",
+}
+
 def geo_lookup(ip):
     """Bestimmt das Land aus der IP - ohne die IP zu loggen/speichern."""
     if not ip:
@@ -167,7 +200,7 @@ class VexoHandler(http.server.SimpleHTTPRequestHandler):
         if not ip:
             ip = self.client_address[0] if self.client_address else ""
         country = geo_lookup(ip)
-        lang = "en" if (country and country.upper() != "DE") else "de"
+        lang = COUNTRY_TO_LANG.get(country.upper(), "en") if country else "en"
         return self._json({"country": country, "lang": lang})
 
 

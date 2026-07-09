@@ -73,10 +73,6 @@
       0% { background-position: 0% 50%; }
       100% { background-position: 250% 50%; }
     }
-    @keyframes livePulse {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.55; transform: scale(1.04); }
-    }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html { scroll-behavior: smooth; }
@@ -93,7 +89,7 @@
     button { font: inherit; cursor: pointer; border: none; background: none; }
     .wrap { width: min(1120px, calc(100% - 40px)); margin: 0 auto; }
 
-    section, .dc-card, .stat-card, .tm-card, .faq-item, .idea-card {
+    section, .dc-card, .stat-card, .faq-item, .idea-card {
       animation: fadeIn 0.65s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
 
@@ -140,6 +136,12 @@
       transition: 0.18s ease; font-weight: 800; font-size: 13px;
     }
     .icon-toggle:hover { transform: translateY(-1px); border-color: var(--accent); }
+    .lang-select {
+      appearance: none; -webkit-appearance: none; cursor: pointer;
+      padding: 0 26px 0 12px; font-family: inherit; font-weight: 800; font-size: 13px;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%238a8a8a'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 10px center;
+    }
     .theme-toggle .sun { display: none; }
     html[data-theme="dark"] .theme-toggle .sun { display: inline; }
     html[data-theme="dark"] .theme-toggle .moon { display: none; }
@@ -172,12 +174,15 @@
     .hero { padding: 84px 0 54px; }
     .hero-grid { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.8fr); gap: 48px; align-items: center; }
     h1 { font-size: clamp(42px, 6.5vw, 78px); line-height: 0.98; letter-spacing: -0.07em; font-weight: 880; }
-    .lead { font-size: clamp(18px, 2vw, 22px); color: var(--muted); margin-top: 20px; }
+    .lead { font-size: clamp(18px, 2vw, 22px); color: var(--muted); margin-top: 20px; will-change: transform; }
 
     .bio-panel {
       background: var(--surface); border: 1px solid var(--line); border-radius: 30px;
       padding: 28px; box-shadow: var(--shadow); position: relative;
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease;
+      will-change: transform;
     }
+    .bio-panel:hover { box-shadow: 0 28px 70px rgba(0, 0, 0, 0.4); }
     .bio-badge {
       display: inline-flex; align-items: center; gap: 8px;
       background: rgba(217, 200, 168, 0.12); color: var(--accent);
@@ -311,13 +316,14 @@
     .idea-card h4 { font-size: 18px; font-weight: 850; letter-spacing: -0.02em; margin-bottom: 6px; }
     .idea-card p { color: var(--muted); font-size: 14px; line-height: 1.5; }
 
-    footer { border-top: 1px solid var(--line); padding: 48px 0; margin-top: 40px; color: var(--muted); font-size: 14px; }
+    footer { border-top: 1px solid var(--line); padding: 48px 0 40px; margin-top: 40px; color: var(--muted); font-size: 14px; }
     .footer-row { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; }
     .visit-counter {
       display: inline-flex; align-items: center; gap: 8px; background: var(--surface);
       border: 1px solid var(--line); padding: 6px 14px; border-radius: 999px; font-weight: 800; color: var(--ink);
     }
     .visit-counter .vnum { color: var(--accent); font-variant-numeric: tabular-nums; }
+    .footer-affiliate { display: block; margin-top: 16px; max-width: 760px; font-size: 12px; color: var(--muted-2); line-height: 1.5; }
 
     /* Toast (Easter Egg) */
     .toast {
@@ -328,6 +334,9 @@
     }
     .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
+    @media (prefers-reduced-motion: reduce) {
+      * { animation: none !important; transition: none !important; }
+    }
     @media (max-width: 860px) {
       .hero-grid { grid-template-columns: 1fr; gap: 32px; }
       .dc-grid { grid-template-columns: 1fr; }
@@ -370,7 +379,7 @@
         <a href="#ideas" data-nav="ideas" data-i18n="nav.ideas">Ideen</a>
       </nav>
       <div class="nav-actions">
-        <button class="icon-toggle lang-toggle" id="langBtn" aria-label="Sprache wechseln">EN</button>
+        <select class="icon-toggle lang-select" id="langSelect" aria-label="Sprache wählen"></select>
         <button class="icon-toggle theme-toggle" id="themeBtn" aria-label="Theme wechseln">
           <span class="moon">🌙</span>
           <span class="sun">☀️</span>
@@ -608,6 +617,7 @@
         <span data-i18n="footer.right">© 2026 VEXO. Alle Rechte vorbehalten. Made by Fufi</span>
       </div>
     </div>
+    <span class="footer-affiliate" data-i18n="footer.affiliate">ℹ️ Affiliate-/Partner-Hinweis: Einige Links können Partnerlinks sein. Verlinkte Shops/Discords sind externe Angebote.</span>
   </footer>
 
   <div class="toast" id="toast">🔥 FUSE EH! 🔥</div>
@@ -622,20 +632,22 @@
     // KONFIGURATION
     // =====================================================================
     var CONFIG = {
-      // Nächster geplanter Live-Stream (lokale Zeit). Wenn liveNow=true oder
-      // die Zeit erreicht ist, erscheint automatisch der 🔴 LIVE-Badge.
       nextStream: "2026-07-10T20:00:00",
       liveNow: false
     };
 
     // =====================================================================
-    // ÜBERSETZUNGEN (DE / EN)
+    // ÜBERSETZUNGEN (DE / EN / ES / FR) + 50 Sprachen im Umschalter
+    // Hinweis: Voll uebersetzt sind DE/EN/ES/FR; alle weiteren 46 Sprachen
+    // des Umschalters greifen graceful auf Englisch zurueck.
     // =====================================================================
+    var SUPPORTED_LANGS = ["ar","az","bg","bn","ca","cs","da","de","el","en","es","et","fa","fi","fil","fr","he","hi","hr","hu","id","it","ja","ka","kk","ko","lt","lv","mk","ms","nl","no","pl","pt","ro","ru","sk","sl","sq","sr","sv","sw","th","tr","uk","ur","vi","zh","am","ta"];
+    var LANG_NAMES = { ar:"العربية", az:"Azərbaycan", bg:"Български", bn:"বাংলা", ca:"Català", cs:"Čeština", da:"Dansk", de:"Deutsch", el:"Ελληνικά", en:"English", es:"Español", et:"Eesti", fa:"فارسی", fi:"Suomi", fil:"Filipino", fr:"Français", he:"עברית", hi:"हिन्दी", hr:"Hrvatski", hu:"Magyar", id:"Indonesia", it:"Italiano", ja:"日本語", ka:"ქართული", kk:"Қазақша", ko:"한국어", lt:"Lietuvių", lv:"Latviešu", mk:"Македонски", ms:"Melayu", nl:"Nederlands", no:"Norsk", pl:"Polski", pt:"Português", ro:"Română", ru:"Русский", sk:"Slovenčina", sl:"Slovenščina", sq:"Shqip", sr:"Српски", sv:"Svenska", sw:"Kiswahili", th:"ไทย", tr:"Türkçe", uk:"Українська", ur:"اردو", vi:"Tiếng Việt", zh:"中文", am:"አማርኛ", ta:"தமிழ்" };
+
     var I18N = {
       de: {
         "nav.about": "Über mich", "nav.discords": "Meine Discords", "nav.stats": "Stats",
-        "nav.ideas": "Ideen",
-        "nav.join": "💎 Community betreten",
+        "nav.ideas": "Ideen", "nav.join": "💎 Community betreten",
         "hero.eyebrow": "🎬 Content Creator & TikToker",
         "hero.title1": "Hey, ich bin",
         "hero.lead": "Willkommen auf meiner offiziellen Hub-Seite! Ich bin TikToker und Notruf Hamburg Player. Hier findest du nicht einfach nur langweilige Links, sondern den direkten Zugang zu meinen Community-Servern, meiner Gang und dem offiziellen Shop-Projekt.",
@@ -643,8 +655,7 @@
         "bio.badge": "✨ VEXO OFFICIAL BIO",
         "bio.text": "Bekannt von TikTok rund um Gaming, Clips, Community-Vibes und Next-Gen Roblox Tools. Mein Ziel ist es, euch den besten Content!",
         "bio.status1": "🔥 Aktiver Creator", "bio.status2": "🟢 Daily Online",
-        "tiktok.viewers": "Zuschauer",
-        "live.soon": "Nächster Live-Stream", "live.now": "🔴 LIVE JETZT",
+        "tiktok.viewers": "Zuschauer", "live.soon": "Nächster Live-Stream", "live.now": "🔴 LIVE JETZT",
         "dc.eyebrow": "Community & Shop", "dc.title": "Das sind meine Discords",
         "dc.desc": "Keine einfachen Textlinks – wähle unten deinen Server mit allen Infos und direktem Zugang.",
         "c1.title": "1. Fuse Eh",
@@ -660,8 +671,7 @@
         "stats.desc": "Live-Daten von Discord & TikTok – automatisch synchronisiert.",
         "stat1.label": "TikTok Follower", "stat2.label": "Fuse Eh Community",
         "stat3.label": "Void Shop Members", "stat4.label": "VEXO Community",
-        "coming": "⏳ Coming Soon",
-        "norealtime": "Keine Live-Daten",
+        "coming": "⏳ Coming Soon", "norealtime": "Keine Live-Daten",
         "faq.eyebrow": "FAQ", "faq.title": "Häufige Fragen",
         "faq.q1": "Sind die Injector sicher?",
         "faq.a1": "Ja – alle Scripts im Void Shop sind reine UI-Verbesserungen, geprüft und mit Anti-Ban-Absicherung. Wir empfehlen aber immer eigenverantwortliche Nutzung.",
@@ -669,30 +679,23 @@
         "faq.a2": "Tritt einfach dem VEXO Community Server bei – dort verteilen wir regelmäßig kostenlose FastFlags und Injector für alle Mitglieder.",
         "faq.q3": "Wann streamst du live?",
         "faq.a3": "Meistens abends auf TikTok. Sobald ein Stream live geht, leuchtet der 🔴 LIVE-Badge oben auf der Seite.",
-        "tm.eyebrow": "Community", "tm.title": "Was die Community sagt", "tm.soon": "Stimmen der Community folgen bald…",
-        "tm.q1": "„Fuse Eh ist der beste Gang-Server, hier trifft man immer jemanden zum Zocken.“",
-        "tm.q2": "„Die Free FFlags aus dem Community-Server sind top, laufen stabil und ohne Ban.“",
-        "tm.q3": "„Void Shop Support ist mega schnell, mein Injector lief sofort.“",
-        "ideas.eyebrow": "Eure Ideen",
-        "ideas.title": "Was wir als Nächstes bauen",
+        "tm.eyebrow": "Community", "tm.title": "Was die Community sagt",
+        "tm.soon": "Stimmen der Community folgen bald…",
+        "idea1.t": "Gang-Fight-Turniere", "idea1.d": "Mehr Events am Wochenende mit Preisen für die Community.",
+        "idea2.t": "TikTok-Tutorials", "idea2.d": "Roblox-Tools als kurze Video-Reihe erklärt.",
+        "idea3.t": "Free-FF Giveaways", "idea3.d": "Regelmäßige Verlosungen im Community-Server.",
+        "idea4.t": "Ideen-Board", "idea4.d": "Genau diese Seite – schreib uns deine Vorschläge!",
+        "ideas.eyebrow": "Eure Ideen", "ideas.title": "Was wir als Nächstes bauen",
         "ideas.desc": "Ideen aus der Community – schreib deine Vorschläge in den Discord!",
-        "idea1.t": "Gang-Fight-Turniere",
-        "idea1.d": "Mehr Events am Wochenende mit Preisen für die Community.",
-        "idea2.t": "TikTok-Tutorials",
-        "idea2.d": "Roblox-Tools als kurze Video-Reihe erklärt.",
-        "idea3.t": "Free-FF Giveaways",
-        "idea3.d": "Regelmäßige Verlosungen im Community-Server.",
-        "idea4.t": "Ideen-Board",
-        "idea4.d": "Genau diese Seite – schreib uns deine Vorschläge!",
         "ideas.cta": "💡 Idee im Discord einreichen",
         "footer.left": "<b>VEXO HUB</b> — Offizielle Hub-Seite für TikTok & Community Discords.",
         "footer.right": "© 2026 VEXO. Alle Rechte vorbehalten. Made by Fufi",
+        "footer.affiliate": "ℹ️ Affiliate-/Partner-Hinweis: Einige Links können Partnerlinks sein. Verlinkte Shops/Discords sind externe Angebote.",
         "visits.label": "Aufrufe"
       },
       en: {
         "nav.about": "About", "nav.discords": "My Discords", "nav.stats": "Stats",
-        "nav.ideas": "Ideas",
-        "nav.join": "💎 Join Community",
+        "nav.ideas": "Ideas", "nav.join": "💎 Join Community",
         "hero.eyebrow": "🎬 Content Creator & TikToker",
         "hero.title1": "Hey, I'm",
         "hero.lead": "Welcome to my official hub page! I'm a TikToker and Notruf Hamburg player. Here you'll find more than boring links – direct access to my community servers, my gang and the official shop project.",
@@ -700,8 +703,7 @@
         "bio.badge": "✨ VEXO OFFICIAL BIO",
         "bio.text": "Known from TikTok for gaming, clips, community vibes and next-gen Roblox tools. My goal is to bring you the best content!",
         "bio.status1": "🔥 Active Creator", "bio.status2": "🟢 Daily Online",
-        "tiktok.viewers": "viewers",
-        "live.soon": "Next Live Stream", "live.now": "🔴 LIVE NOW",
+        "tiktok.viewers": "viewers", "live.soon": "Next Live Stream", "live.now": "🔴 LIVE NOW",
         "dc.eyebrow": "Community & Shop", "dc.title": "These are my Discords",
         "dc.desc": "No plain text links – pick your server below with all the info and direct access.",
         "c1.title": "1. Fuse Eh",
@@ -717,8 +719,7 @@
         "stats.desc": "Live data from Discord & TikTok – automatically synced.",
         "stat1.label": "TikTok Followers", "stat2.label": "Fuse Eh Community",
         "stat3.label": "Void Shop Members", "stat4.label": "VEXO Community",
-        "coming": "⏳ Coming Soon",
-        "norealtime": "No live data",
+        "coming": "⏳ Coming Soon", "norealtime": "No live data",
         "faq.eyebrow": "FAQ", "faq.title": "Frequently Asked Questions",
         "faq.q1": "Are the injectors safe?",
         "faq.a1": "Yes – all scripts in the Void Shop are UI-only improvements, tested and protected with anti-ban. We always recommend responsible use.",
@@ -726,31 +727,160 @@
         "faq.a2": "Just join the VEXO Community Server – we regularly drop free FastFlags and injectors for all members.",
         "faq.q3": "When do you stream live?",
         "faq.a3": "Mostly in the evenings on TikTok. As soon as a stream goes live, the 🔴 LIVE badge lights up at the top of the page.",
-        "tm.eyebrow": "Community", "tm.title": "What the community says", "tm.soon": "Community voices coming soon…",
-        "tm.q1": "„Fuse Eh is the best gang server, you always find someone to play with.“",
-        "tm.q2": "„The free FFlags from the community server are top, run stable and ban-free.“",
-        "tm.q3": "„Void Shop support is super fast, my injector worked instantly.“",
-        "ideas.eyebrow": "Your Ideas",
-        "ideas.title": "What we build next",
+        "tm.eyebrow": "Community", "tm.title": "What the community says",
+        "tm.soon": "Community voices coming soon…",
+        "idea1.t": "Gang-Fight Tourneys", "idea1.d": "More weekend events with prizes for the community.",
+        "idea2.t": "TikTok Tutorials", "idea2.d": "Roblox tools explained in a short video series.",
+        "idea3.t": "Free-FF Giveaways", "idea3.d": "Regular giveaways in the community server.",
+        "idea4.t": "Ideas Board", "idea4.d": "This very page – send us your suggestions!",
+        "ideas.eyebrow": "Your Ideas", "ideas.title": "What we build next",
         "ideas.desc": "Ideas from the community – drop your suggestions in Discord!",
-        "idea1.t": "Gang-Fight Tourneys",
-        "idea1.d": "More weekend events with prizes for the community.",
-        "idea2.t": "TikTok Tutorials",
-        "idea2.d": "Roblox tools explained in a short video series.",
-        "idea3.t": "Free-FF Giveaways",
-        "idea3.d": "Regular giveaways in the community server.",
-        "idea4.t": "Ideas Board",
-        "idea4.d": "This very page – send us your suggestions!",
         "ideas.cta": "💡 Submit an idea on Discord",
         "footer.left": "<b>VEXO HUB</b> — Official hub page for TikTok & community Discords.",
         "footer.right": "© 2026 VEXO. All rights reserved. Made by Fufi",
+        "footer.affiliate": "ℹ️ Affiliate/partner note: some links may be partner links. Linked shops/Discords are external offers.",
         "visits.label": "visits"
+      },
+      es: {
+        "nav.about": "Acerca de", "nav.discords": "Mis Discords", "nav.stats": "Stats",
+        "nav.ideas": "Ideas", "nav.join": "💎 Unirse a la comunidad",
+        "hero.eyebrow": "🎬 Creador de contenido y TikToker",
+        "hero.title1": "Hola, soy",
+        "hero.lead": "¡Bienvenido a mi hub oficial! Soy TikToker y jugador de Notruf Hamburg. Aquí encontrarás no solo enlaces aburridos, sino acceso directo a mis servidores de comunidad, mi gang y el proyecto de tienda oficial.",
+        "hero.btn1": "🚀 Elegir Discords", "hero.btn2": "📊 Stats (Próximamente)",
+        "bio.badge": "✨ BIO OFICIAL VEXO",
+        "bio.text": "Conocido por TikTok con gaming, clips, vibra de comunidad y herramientas Roblox de próxima generación. ¡Mi objetivo es darte el mejor contenido!",
+        "bio.status1": "🔥 Creador activo", "bio.status2": "🟢 Diario online",
+        "tiktok.viewers": "espectadores", "live.soon": "Próxima transmisión en vivo", "live.now": "🔴 EN VIVO AHORA",
+        "dc.eyebrow": "Comunidad y Tienda", "dc.title": "Estos son mis Discords",
+        "dc.desc": "Sin simples enlaces de texto – elige tu servidor con toda la info y acceso directo.",
+        "c1.title": "1. Fuse Eh",
+        "c1.desc": "¡Este es mi servidor de gang oficial <b>Fuse Eh</b>! Aquí hacemos gang fights y más; mejórate y una comunidad activa está ahí para jugar contigo.",
+        "c1.btn": "🔥 Unirse al servidor Gang",
+        "c2.title": "2. Servidor VOID Shop",
+        "c2.desc": "¡El servidor oficial de <b>Void Shop</b>! Aquí puedes comprar FFL (FastFlags) potentes, injectors exclusivos (solo mejoras de UI), herramientas anti-ban confiables y más. Todo seguro, probado y con soporte en vivo.",
+        "c2.btn1": "💬 Al DC de Void Shop", "c2.btn2": "🌐 Web y info",
+        "c3.title": "3. Servidor Comunidad",
+        "c3.desc": "¡El servidor oficial de <b>VEXO Community</b>! Recibe FFlags gratis, injectors gratis, pings en vivo para nuevos updates y eventos, y chatea con toda la comunidad las 24/7.",
+        "c3.btn": "💬 Unirse al servidor Comunidad",
+        "stats.eyebrow": "Seguimiento", "stats.title": "Mis Stats",
+        "stats.desc": "Datos en vivo de Discord & TikTok – sincronizados automáticamente.",
+        "stat1.label": "Seguidores en TikTok", "stat2.label": "Comunidad Fuse Eh",
+        "stat3.label": "Miembros Void Shop", "stat4.label": "Comunidad VEXO",
+        "coming": "⏳ Próximamente", "norealtime": "Sin datos en vivo",
+        "faq.eyebrow": "FAQ", "faq.title": "Preguntas frecuentes",
+        "faq.q1": "¿Son seguros los injectors?",
+        "faq.a1": "Sí – todos los scripts del Void Shop son mejoras de solo UI, probados y con protección anti-ban. Pero siempre recomendamos un uso responsable.",
+        "faq.q2": "¿Cómo consigo los FFlags gratis?",
+        "faq.a2": "Solo únete al servidor VEXO Community – repartimos FastFlags e injectors gratis para todos los miembros regularmente.",
+        "faq.q3": "¿Cuándo haces live?",
+        "faq.a3": "La mayoría las noches en TikTok. En cuanto un live arranca, el badge 🔴 LIVE se enciende arriba.",
+        "tm.eyebrow": "Comunidad", "tm.title": "Lo que dice la comunidad",
+        "tm.soon": "Las voces de la comunidad llegarán pronto…",
+        "idea1.t": "Torneos Gang-Fight", "idea1.d": "Más eventos los fines de semana con premios para la comunidad.",
+        "idea2.t": "Tutoriales de TikTok", "idea2.d": "Herramientas Roblox explicadas en una serie de videos cortos.",
+        "idea3.t": "Sorteos Free-FF", "idea3.d": "Sorteos regulares en el servidor de comunidad.",
+        "idea4.t": "Tablero de ideas", "idea4.d": "Exactamente esta página – ¡envíanos tus sugerencias!",
+        "ideas.eyebrow": "Tus Ideas", "ideas.title": "Qué construimos próximo",
+        "ideas.desc": "Ideas de la comunidad – ¡envía tus sugerencias al Discord!",
+        "ideas.cta": "💡 Enviar una idea en Discord",
+        "footer.left": "<b>VEXO HUB</b> — Sitio oficial para TikTok y Discords de comunidad.",
+        "footer.right": "© 2026 VEXO. Todos los derechos reservados. Made by Fufi",
+        "footer.affiliate": "ℹ️ Aviso de afiliados/socios: algunos enlaces pueden ser enlaces de socios. Las tiendas/Discords enlazados son ofertas externas.",
+        "visits.label": "visitas"
+      },
+      fr: {
+        "nav.about": "À propos", "nav.discords": "Mes Discords", "nav.stats": "Stats",
+        "nav.ideas": "Idées", "nav.join": "💎 Rejoindre la communauté",
+        "hero.eyebrow": "🎬 Créateur de contenu & TikToker",
+        "hero.title1": "Salut, je suis",
+        "hero.lead": "Bienvenue sur mon hub officiel ! Je suis TikToker et joueur Notruf Hamburg. Vous trouverez ici bien plus que de simples liens – un accès direct à mes serveurs communautaires, mon gang et le projet de boutique officiel.",
+        "hero.btn1": "🚀 Choisir les Discords", "hero.btn2": "📊 Stats (Bientôt)",
+        "bio.badge": "✨ BIO OFFICIELLE VEXO",
+        "bio.text": "Connu sur TikTok pour le gaming, les clips, la vibe communautaire et les outils Roblox de nouvelle génération. Mon but : vous offrir le meilleur contenu !",
+        "bio.status1": "🔥 Créateur actif", "bio.status2": "🟢 En ligne tous les jours",
+        "tiktok.viewers": "spectateurs", "live.soon": "Prochain live", "live.now": "🔴 EN DIRECT MAINTENANT",
+        "dc.eyebrow": "Communauté & Boutique", "dc.title": "Voici mes Discords",
+        "dc.desc": "Pas de simples liens texte – choisissez votre serveur avec toutes les infos et un accès direct.",
+        "c1.title": "1. Fuse Eh",
+        "c1.desc": "C'est mon serveur de gang officiel <b>Fuse Eh</b> ! On fait des gang fights et plus – améliore-toi et une communauté active est là pour jouer avec toi !",
+        "c1.btn": "🔥 Rejoindre le serveur Gang",
+        "c2.title": "2. Serveur VOID Shop",
+        "c2.desc": "Le serveur officiel <b>Void Shop</b> ! Ici vous pouvez acheter des FFL (FastFlags) puissants, des injecteurs exclusifs (améliorations UI uniquement), des outils anti-ban fiables et plus. Tout sûr, testé et avec support en direct.",
+        "c2.btn1": "💬 DC Void Shop", "c2.btn2": "🌐 Site & infos",
+        "c3.title": "3. Serveur Communauté",
+        "c3.desc": "Le serveur officiel <b>VEXO Community</b> ! Recevez des FFlags gratuits, des injecteurs gratuits, des pings en direct pour les MAJ et events, et discutez avec toute la communauté 24/7.",
+        "c3.btn": "💬 Rejoindre le serveur Communauté",
+        "stats.eyebrow": "Suivi", "stats.title": "Mes Stats",
+        "stats.desc": "Données en direct de Discord & TikTok – synchronisées automatiquement.",
+        "stat1.label": "Abonnés TikTok", "stat2.label": "Communauté Fuse Eh",
+        "stat3.label": "Membres Void Shop", "stat4.label": "Communauté VEXO",
+        "coming": "⏳ Bientôt", "norealtime": "Pas de données live",
+        "faq.eyebrow": "FAQ", "faq.title": "Questions fréquentes",
+        "faq.q1": "Les injecteurs sont-ils sûrs ?",
+        "faq.a1": "Oui – tous les scripts du Void Shop sont des améliorations UI uniquement, testés et protégés anti-ban. On recommande toujours une utilisation responsable.",
+        "faq.q2": "Comment obtenir les FFlags gratuits ?",
+        "faq.a2": "Rejoignez simplement le serveur VEXO Community – on distribue régulièrement FastFlags et injecteurs gratuits à tous les membres.",
+        "faq.q3": "Quand est-ce que tu fais des live ?",
+        "faq.a3": "La plupart du temps le soir sur TikTok. Dès qu'un live démarre, le badge 🔴 LIVE s'affiche en haut.",
+        "tm.eyebrow": "Communauté", "tm.title": "Ce que dit la communauté",
+        "tm.soon": "Les voix de la communauté arrivent bientôt…",
+        "idea1.t": "Tournois Gang-Fight", "idea1.d": "Plus d'events le week-end avec des prix pour la communauté.",
+        "idea2.t": "Tutoriels TikTok", "idea2.d": "Outils Roblox expliqués dans une courte série vidéo.",
+        "idea3.t": "Free-FF Giveaways", "idea3.d": "Tirages au sort réguliers sur le serveur communautaire.",
+        "idea4.t": "Idées", "idea4.d": "Exactement cette page – envoyez-nous vos suggestions !",
+        "ideas.eyebrow": "Vos Idées", "ideas.title": "Ce que nous construisons ensuite",
+        "ideas.desc": "Idées de la communauté – envoyez vos suggestions sur Discord !",
+        "ideas.cta": "💡 Proposer une idée sur Discord",
+        "footer.left": "<b>VEXO HUB</b> — Site officiel pour TikTok & les Discords communautaires.",
+        "footer.right": "© 2026 VEXO. Tous droits réservés. Made by Fufi",
+        "footer.affiliate": "ℹ️ Avis affilié/partenaire : certains liens peuvent être des liens partenaires. Les boutiques/Discords liés sont des offres externes.",
+        "visits.label": "visites"
       }
     };
 
     var curLang = "de";
-    function locale() { return curLang === "de" ? "de-DE" : "en-US"; }
+    function locale() { return curLang === "de" ? "de-DE" : (curLang === "fr" ? "fr-FR" : (curLang === "es" ? "es-ES" : "en-US")); }
     function fmt(n) { return Number(n).toLocaleString(locale()); }
+
+    // ---- Sprach-Umschalter (50 Sprachen) + URL-Parameter ----
+    function updateLangUrl(lang) {
+      try {
+        var p = new URLSearchParams(location.search);
+        p.set("lang", lang);
+        history.replaceState(null, "", location.pathname + "?" + p.toString());
+      } catch (e) {}
+    }
+    function applyLang(lang) {
+      if (SUPPORTED_LANGS.indexOf(lang) === -1) lang = "en";
+      curLang = lang;
+      document.documentElement.setAttribute("lang", lang);
+      var dict = I18N[lang] || I18N.en;
+      document.querySelectorAll("[data-i18n]").forEach(function (el) {
+        var k = el.getAttribute("data-i18n");
+        var v = dict[k];
+        if (v == null) v = I18N.en[k];
+        if (v == null) v = k;
+        el.innerHTML = v;
+      });
+      var sel = document.getElementById("langSelect");
+      if (sel) sel.value = lang;
+      updateLangUrl(lang);
+      try { localStorage.setItem("vexo-lang", lang); } catch (e) {}
+    }
+    function buildLangSelect() {
+      var sel = document.getElementById("langSelect");
+      if (!sel) return;
+      SUPPORTED_LANGS.forEach(function (code) {
+        var o = document.createElement("option");
+        o.value = code;
+        o.textContent = LANG_NAMES[code] || code;
+        sel.appendChild(o);
+      });
+      sel.value = curLang;
+      sel.addEventListener("change", function () { applyLang(sel.value); });
+    }
+    buildLangSelect();
 
     // ---- Theme ----
     function applyTheme(t) {
@@ -758,39 +888,39 @@
       try { localStorage.setItem("vexo-theme", t); } catch (e) {}
     }
 
-    // ---- Sprache ----
-    function applyLang(lang) {
-      curLang = lang;
-      document.documentElement.setAttribute("lang", lang);
-      var dict = I18N[lang] || I18N.de;
-      document.querySelectorAll("[data-i18n]").forEach(function (el) {
-        var k = el.getAttribute("data-i18n");
-        if (dict[k] != null) el.innerHTML = dict[k];
-      });
-      var btn = document.getElementById("langBtn");
-      if (btn) btn.textContent = lang === "de" ? "EN" : "DE";
-      try { localStorage.setItem("vexo-lang", lang); } catch (e) {}
-    }
-
-    // Initialisierung Theme + Sprache
+    // =====================================================================
+    // INIT (Theme + Sprache: URL ?lang= > geo > localStorage > de)
+    // =====================================================================
     (function init() {
       var savedTheme = "dark";
       try { savedTheme = localStorage.getItem("vexo-theme") || "dark"; } catch (e) {}
       applyTheme(savedTheme);
-      var savedLang = "de";
-      try { savedLang = localStorage.getItem("vexo-lang") || "de"; } catch (e) {}
-      applyLang(savedLang);
+
+      var initialLang = "de";
+      try {
+        var params = new URLSearchParams(location.search);
+        var urlLang = params.get("lang");
+        if (urlLang && SUPPORTED_LANGS.indexOf(urlLang) !== -1) initialLang = urlLang;
+        else { var s = localStorage.getItem("vexo-lang"); if (s) initialLang = s; }
+      } catch (e) {}
+      applyLang(initialLang);
+
+      // Geo auto-detect (Permission-Info)
+      fetch("/api/geo")
+        .then(function (r) { return r.json(); })
+        .then(function (d) {
+          if (d && d.country && d.lang && SUPPORTED_LANGS.indexOf(d.lang) !== -1 && d.lang !== curLang) {
+            applyLang(d.lang);
+            showToast("🌍 Sprache automatisch an dein Land angepasst");
+          }
+        })
+        .catch(function () {});
     })();
 
     // Theme-Toggle
     document.getElementById("themeBtn").addEventListener("click", function () {
       var cur = document.documentElement.getAttribute("data-theme");
       applyTheme(cur === "dark" ? "light" : "dark");
-    });
-
-    // Sprach-Toggle
-    document.getElementById("langBtn").addEventListener("click", function () {
-      applyLang(curLang === "de" ? "en" : "de");
     });
 
     // =====================================================================
@@ -828,6 +958,27 @@
     }
 
     // =====================================================================
+    // INTERAKTIVER HERO (dezenter Maus-Parallax)
+    // =====================================================================
+    (function heroParallax() {
+      var about = document.getElementById("about");
+      var bio = document.querySelector(".bio-panel");
+      var lead = document.querySelector(".hero .lead");
+      if (!about || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+      about.addEventListener("mousemove", function (e) {
+        var r = about.getBoundingClientRect();
+        var x = (e.clientX - r.left) / r.width - 0.5;
+        var y = (e.clientY - r.top) / r.height - 0.5;
+        if (bio) bio.style.transform = "translate(" + (x * 16) + "px," + (y * 16) + "px)";
+        if (lead) lead.style.transform = "translate(" + (x * -8) + "px," + (y * -8) + "px)";
+      });
+      about.addEventListener("mouseleave", function () {
+        if (bio) bio.style.transform = "";
+        if (lead) lead.style.transform = "";
+      });
+    })();
+
+    // =====================================================================
     // LIVE-STATS (Discord, echt & live) + COUNT-UP
     // REGEL: NIEMALS Fake-Zahlen. TikTok ohne echte Quelle -> Karte aus.
     // =====================================================================
@@ -858,7 +1009,6 @@
       if (!el) return;
       var card = el.closest(".stat-card");
       if (v == null) {
-        // Keine echten Live-Daten -> ehrlich kennzeichnen, KEINE Fake-Zahl
         el.textContent = "—";
         var chip = card.querySelector(".coming-chip .chip-text");
         if (chip) chip.textContent = (I18N[curLang] || I18N.de)["norealtime"];
@@ -882,7 +1032,7 @@
         tkCard.style.display = "";
         renderStat("tiktok_followers", tiktok.followers);
       } else if (tkCard) {
-        tkCard.style.display = "none"; // keine echten TikTok-Zahlen -> nicht anzeigen
+        tkCard.style.display = "none";
       }
     }
 
@@ -906,7 +1056,7 @@
     fetch("/api/stats")
       .then(function (r) { return r.json(); })
       .then(fillStats)
-      .catch(function () { /* bei Fehler bleibt ehrlich "—" / "Keine Live-Daten" */ });
+      .catch(function () {});
 
     // =====================================================================
     // BESUCHERZÄHLER (echte Requests)
@@ -925,16 +1075,6 @@
         })
         .catch(function () { vc.textContent = "?"; });
     }
-
-    // =====================================================================
-    // GEO-SPRACHE (Datenschutz: IP wird NICHT geloggt/gespeichert)
-    // =====================================================================
-    fetch("/api/geo")
-      .then(function (r) { return r.json(); })
-      .then(function (d) {
-        if (d && d.lang && d.lang !== curLang) applyLang(d.lang);
-      })
-      .catch(function () {});
 
     // =====================================================================
     // TASTENKOMBINATIONEN (4 einfache Shortcuts, jeweils eigener Effekt)
@@ -995,7 +1135,7 @@
     var pressedKeys = [];
     document.addEventListener("keydown", function (e) {
       var k = e.key;
-      if (!k || k.length !== 1) return;          // nur einzelne Buchstaben
+      if (!k || k.length !== 1) return;
       if (e.ctrlKey || e.metaKey || e.altKey) return;
       var ch = k.toLowerCase();
       pressedKeys.push(ch);
