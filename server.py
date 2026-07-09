@@ -31,19 +31,30 @@ CONFIG = {
         "voidShop": "h83FkGxhps",
         "community": "39dqMvXCnc",
     },
-    # Fallback, falls die Discord-API nicht erreichbar ist oder ein
-    # Invite abgelaufen ist. TikTok-Zahlen sind Konfig-Werte, da TikTok
-    # keine kostenlose Echtzeit-API für Follower/Live-Viewer anbietet.
-    "fallback": {
-        "fuseEh_members": 1850,
-        "voidShop_members": 500,
-        "community_members": 1200,
-        "tiktok_followers": 128400,
-        "tiktok_views": 2450000,
-        "tiktok_live_viewers": 0,
-        "tiktok_live_now": False,
-    },
 }
+
+# TikTok bietet KEINE kostenlose öffentliche Echtzeit-API für
+# Follower- oder Live-Viewer-Zahlen. Um ECHTE, LIVE TikTok-Daten zu
+# zeigen, hier eine echte Datenquelle eintragen (z.B. ein eigener Proxy,
+# der mit einem gültigen TikTok-Token autorisiert ist und JSON der Form
+# {"followers": N, "live_viewers": N, "live_now": bool} zurückgibt).
+# Solange dies None ist, werden BEWUSST KEINE (fake) TikTok-Zahlen
+# angezeigt.
+TIKTOK_SOURCE = None
+
+
+def fetch_tiktok():
+    """Liefert echte TikTok-Daten oder None - niemals Fake-Zahlen."""
+    if not TIKTOK_SOURCE:
+        return None
+    try:
+        req = urllib.request.Request(
+            TIKTOK_SOURCE, headers={"User-Agent": "VEXO-Hub/1.0"}
+        )
+        with urllib.request.urlopen(req, timeout=5) as r:
+            return json.load(r)
+    except Exception:
+        return None
 
 # ---------------------------------------------------------------------------
 # Besucherzähler (persistent in visits.json)
@@ -103,26 +114,17 @@ class VexoHandler(http.server.SimpleHTTPRequestHandler):
         self.wfile.write(body)
 
     def serve_stats(self):
-        fb = CONFIG["fallback"]
         discord = {}
         for key, code in CONFIG["discord_invites"].items():
             try:
                 discord[key] = fetch_discord(code)
             except Exception:
-                discord[key] = {
-                    "name": "",
-                    "members": fb.get(key + "_members", 0),
-                    "online": 0,
-                }
+                # Kein Fake-Fallback: bei Fehler keine Zahl zurückgeben
+                discord[key] = {"name": "", "members": None, "online": None}
         payload = {
             "updated_at": datetime.now(timezone.utc).isoformat(),
             "discord": discord,
-            "tiktok": {
-                "followers": fb["tiktok_followers"],
-                "views": fb["tiktok_views"],
-                "live_viewers": fb["tiktok_live_viewers"],
-                "live_now": fb["tiktok_live_now"],
-            },
+            "tiktok": fetch_tiktok(),  # echte Daten oder None - nie Fake
         }
         return self._json(payload)
 

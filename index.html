@@ -539,7 +539,7 @@
       </div>
 
       <div class="stats-grid">
-        <div class="stat-card" id="card-tiktok">
+        <div class="stat-card" id="card-tiktok" style="display:none">
           <span data-i18n="stat1.label">TikTok Follower</span>
           <strong data-stat="tiktok_followers">—</strong>
           <div class="coming-chip"><span class="chip-text" data-i18n="coming">⏳ Coming Soon</span></div>
@@ -724,6 +724,8 @@
       }
     };
 
+    I18N.de.norealtime = "Keine Live-Daten";
+    I18N.en.norealtime = "No live data";
     var curLang = "de";
     function locale() { return curLang === "de" ? "de-DE" : "en-US"; }
     function fmt(n) { return Number(n).toLocaleString(locale()); }
@@ -877,28 +879,48 @@
       requestAnimationFrame(step);
     }
 
-    // Reveal-Animation: Count-up erst wenn sichtbar
+    // REGEL: NIEMALS Fake-Zahlen. Jede Zahl ist echt & live.
+    // Fehlt eine echte Zahl (API nicht erreichbar / keine Quelle
+    // konfiguriert), wird ehrlich "—" bzw. gar nichts angezeigt.
     var statsRevealed = false;
+    var statValues = {}; // k -> echter Zielwert
+
+    function renderStat(k, v) {
+      var el = statMap[k];
+      if (!el) return;
+      var card = el.closest(".stat-card");
+      if (v == null) {
+        // Keine echten Live-Daten -> ehrlich kennzeichnen, KEINE Fake-Zahl
+        el.textContent = "—";
+        var chip = card.querySelector(".coming-chip .chip-text");
+        if (chip) chip.textContent = (I18N[curLang] || I18N.de)["norealtime"];
+        return;
+      }
+      card.classList.add("live");
+      statValues[k] = v;
+      if (statsRevealed) countUp(el, v);
+      else el.textContent = fmt(0);
+    }
+
     function fillStats(data) {
-      var vals = {
-        tiktok_followers: data.tiktok && data.tiktok.followers,
-        fuseEh: data.discord && data.discord.fuseEh && data.discord.fuseEh.members,
-        voidShop: data.discord && data.discord.voidShop && data.discord.voidShop.members,
-        community: data.discord && data.discord.community && data.discord.community.members
-      };
-      Object.keys(statMap).forEach(function (k) {
-        var el = statMap[k], card = el && el.closest(".stat-card");
-        if (!el || !card) return;
-        var v = vals[k];
-        if (v == null) return; // bleibt "Coming Soon"
-        card.classList.add("live");
-        if (statsRevealed) countUp(el, v); else el.textContent = fmt(v);
-      });
-      // TikTok Live-Viewer-Pill
-      if (data.tiktok && data.tiktok.live_now && data.tiktok.live_viewers > 0) {
-        var pill = document.getElementById("ttLivePill");
-        var vw = document.getElementById("ttViewers");
-        if (pill && vw) { vw.textContent = fmt(data.tiktok.live_viewers); pill.hidden = false; }
+      var discord = (data && data.discord) || {};
+      renderStat("fuseEh", discord.fuseEh && discord.fuseEh.members);
+      renderStat("voidShop", discord.voidShop && discord.voidShop.members);
+      renderStat("community", discord.community && discord.community.members);
+
+      var tiktok = data && data.tiktok;
+      var tkCard = document.getElementById("card-tiktok");
+      if (tiktok && tiktok.followers != null) {
+        tkCard.style.display = "";
+        renderStat("tiktok_followers", tiktok.followers);
+        if (tiktok.live_now && tiktok.live_viewers > 0) {
+          var pill = document.getElementById("ttLivePill");
+          var vw = document.getElementById("ttViewers");
+          if (pill && vw) { vw.textContent = fmt(tiktok.live_viewers); pill.hidden = false; }
+        }
+      } else if (tkCard) {
+        // Keine echten TikTok-Zahlen -> Karte ausblenden (nie fake)
+        tkCard.style.display = "none";
       }
     }
 
@@ -907,12 +929,9 @@
         entries.forEach(function (e) {
           if (e.isIntersecting && !statsRevealed) {
             statsRevealed = true;
-            Object.keys(statMap).forEach(function (k) {
-              var el = statMap[k], card = el && el.closest(".stat-card");
-              if (card && card.classList.contains("live")) {
-                var num = parseInt((el.textContent || "0").replace(/\D/g, ""), 10) || 0;
-                countUp(el, num);
-              }
+            Object.keys(statValues).forEach(function (k) {
+              var el = statMap[k];
+              if (el && statValues[k] != null) countUp(el, statValues[k]);
             });
             statObserver.disconnect();
           }
