@@ -22,7 +22,6 @@
     })();
   </script>
   <style>
-    /* Exakt das CSS-Designsystem der VOID Shop Website */
     :root {
       --bg: #f7f4ef;
       --surface: #fffdf9;
@@ -70,10 +69,6 @@
       0%, 100% { transform: translateY(0px); }
       50% { transform: translateY(-8px); }
     }
-    @keyframes pulseGlow {
-      0%, 100% { box-shadow: 0 0 14px rgba(47, 125, 85, 0.28); }
-      50% { box-shadow: 0 0 28px rgba(47, 125, 85, 0.6); }
-    }
     @keyframes borderFlow {
       0% { background-position: 0% 50%; }
       100% { background-position: 250% 50%; }
@@ -98,7 +93,7 @@
     button { font: inherit; cursor: pointer; border: none; background: none; }
     .wrap { width: min(1120px, calc(100% - 40px)); margin: 0 auto; }
 
-    section, .dc-card, .stat-card, .tm-card, .faq-item {
+    section, .dc-card, .stat-card, .tm-card, .faq-item, .idea-card {
       animation: fadeIn 0.65s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
 
@@ -187,6 +182,8 @@
       display: inline-flex; align-items: center; gap: 8px;
       animation: livePulse 1.4s ease-in-out infinite;
     }
+    .live-strip.is-live #liveWhen,
+    .live-strip.is-live .live-count { display: none; }
     .live-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--bad); box-shadow: 0 0 10px var(--bad); }
     .live-now-badge { display: none; }
 
@@ -218,12 +215,6 @@
     }
     .verified-icon { width: 22px; height: 22px; fill: var(--accent); }
     .tiktok-box { margin: 6px 0 18px; }
-    .live-pill {
-      display: inline-flex; align-items: center; gap: 6px; margin-top: 10px;
-      background: rgba(163,60,60,0.12); color: var(--bad);
-      border: 1px solid rgba(163,60,60,0.3); padding: 4px 12px; border-radius: 999px;
-      font-size: 13px; font-weight: 800; animation: livePulse 1.4s ease-in-out infinite;
-    }
 
     /* Discord Cards Section */
     .section-head { margin-bottom: 36px; }
@@ -329,7 +320,7 @@
     .faq-item[open] summary:after { transform: rotate(45deg); }
     .faq-item .faq-answer { padding: 0 24px 22px; color: var(--muted); font-size: 16px; line-height: 1.6; }
 
-    /* Testimonials */
+    /* Testimonials (Comic-Stil) */
     .tm-carousel { display: flex; align-items: center; gap: 16px; margin-top: 28px; }
     .tm-nav {
       flex: 0 0 auto; width: 48px; height: 48px; border-radius: 50%;
@@ -340,15 +331,33 @@
     .tm-viewport { flex: 1; overflow: hidden; }
     .tm-card {
       display: none; background: var(--surface); border: 1px solid var(--line);
-      border-radius: 26px; padding: 34px; box-shadow: var(--shadow); font-size: 19px;
-      font-weight: 600; line-height: 1.5; position: relative;
+      border-radius: 26px; padding: 30px 34px 32px; box-shadow: var(--shadow);
+      position: relative; text-align: left;
     }
     .tm-card.active { display: block; animation: fadeIn 0.5s ease; }
-    .tm-card:before { content: "“"; position: absolute; top: 8px; left: 22px; font-size: 80px; color: var(--accent); opacity: 0.18; }
-    .tm-card .tm-author { display: block; margin-top: 18px; font-size: 14px; font-weight: 800; color: var(--accent); }
+    .tm-card:before {
+      content: ""; position: absolute; top: -12px; left: 40px;
+      border: 12px solid transparent; border-bottom-color: var(--surface);
+      filter: drop-shadow(0 -1px 0 var(--line));
+    }
+    .tm-avatar {
+      width: 56px; height: 56px; border-radius: 50%; display: grid; place-items: center;
+      font-size: 28px; background: linear-gradient(135deg, var(--c1, #8b6f47), var(--c2, #2f7d55));
+      border: 3px solid var(--bg); box-shadow: 0 8px 20px rgba(0,0,0,0.18); margin-bottom: 16px;
+    }
+    .tm-quote { font-size: 19px; font-weight: 600; line-height: 1.55; color: var(--ink); }
+    .tm-author { margin-top: 16px; font-weight: 800; color: var(--accent); font-size: 14px; letter-spacing: 0.02em; }
     .tm-dots { display: flex; gap: 8px; justify-content: center; margin-top: 20px; }
     .tm-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--line); cursor: pointer; transition: 0.2s ease; }
     .tm-dot.active { background: var(--accent); width: 24px; border-radius: 999px; }
+
+    /* Ideen-Board */
+    .idea-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 18px; margin-top: 28px; }
+    .idea-card { background: var(--surface); border: 1px solid var(--line); border-radius: 20px; padding: 22px; transition: 0.22s cubic-bezier(0.16,1,0.3,1); }
+    .idea-card:hover { transform: translateY(-5px); border-color: var(--accent); box-shadow: 0 18px 40px rgba(0,0,0,0.25); }
+    .idea-ico { font-size: 30px; margin-bottom: 8px; }
+    .idea-card h4 { font-size: 18px; font-weight: 850; letter-spacing: -0.02em; margin-bottom: 6px; }
+    .idea-card p { color: var(--muted); font-size: 14px; line-height: 1.5; }
 
     footer { border-top: 1px solid var(--line); padding: 48px 0; margin-top: 40px; color: var(--muted); font-size: 14px; }
     .footer-row { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; }
@@ -393,6 +402,7 @@
         <a href="#discords" data-nav="discords">Meine Discords</a>
         <a href="#stats" data-nav="stats">Stats</a>
         <a href="#community" data-nav="community">Community</a>
+        <a href="#ideas" data-nav="ideas" data-i18n="nav.ideas">Ideen</a>
       </nav>
       <div class="nav-actions">
         <button class="icon-toggle lang-toggle" id="langBtn" aria-label="Sprache wechseln">EN</button>
@@ -405,9 +415,9 @@
     </div>
   </header>
 
-  <!-- Live-Strip: Countdown oder LIVE -->
+  <!-- Live-Strip: Wann ist die nächste Live? / LIVE -->
   <div class="live-strip" id="liveStrip">
-    <span id="liveText" data-i18n="live.soon">Nächster Live-Stream</span>
+    <span id="liveWhen">Nächster Live: …</span>
     <span class="live-count" id="liveCountdown">--:--:--</span>
     <span class="live-now-badge"><span class="live-dot"></span><span data-i18n="live.now">🔴 LIVE JETZT</span></span>
   </div>
@@ -436,7 +446,6 @@
         </div>
         <div class="tiktok-box">
           <blockquote class="tiktok-follow" data-username="@ehvexo"></blockquote>
-          <span class="live-pill" id="ttLivePill" hidden>🔴 <span id="ttViewers">0</span> <span data-i18n="tiktok.viewers">Zuschauer</span></span>
         </div>
         <p style="color: var(--muted); font-size: 15px; margin-bottom: 20px;" data-i18n="bio.text">
           Bekannt von TikTok rund um Gaming, Clips, Community-Vibes und Next-Gen Roblox Tools. Mein Ziel ist es, euch den besten Content!
@@ -585,7 +594,7 @@
     </div>
   </section>
 
-  <!-- Testimonials Section -->
+  <!-- Testimonials Section (Comic-Stil) -->
   <section id="community" class="wrap">
     <div class="section-head">
       <div class="eyebrow" data-i18n="tm.eyebrow">Community</div>
@@ -594,13 +603,59 @@
     <div class="tm-carousel">
       <button class="tm-nav" id="tmPrev" aria-label="Vorheriges">‹</button>
       <div class="tm-viewport">
-        <div class="tm-card active" data-i18n="tm.q1">„Fuse Eh ist der beste Gang-Server, hier trifft man immer jemanden zum Zocken."<span class="tm-author">— @player_one</span></div>
-        <div class="tm-card" data-i18n="tm.q2">„Die Free FFlags aus dem Community-Server sind top, laufen stabil und ohne Ban."<span class="tm-author">— @robloxfan</span></div>
-        <div class="tm-card" data-i18n="tm.q3">„Void Shop Support ist mega schnell, mein Injector lief sofort."<span class="tm-author">— @clipper</span></div>
+        <div class="tm-card active">
+          <div class="tm-avatar" style="--c1:#c1a16d;--c2:#8b6f47">🎮</div>
+          <p class="tm-quote" data-i18n="tm.q1">„Fuse Eh ist der beste Gang-Server, hier trifft man immer jemanden zum Zocken.“</p>
+          <div class="tm-author">@player_one</div>
+        </div>
+        <div class="tm-card">
+          <div class="tm-avatar" style="--c1:#73c995;--c2:#2f7d55">🛡️</div>
+          <p class="tm-quote" data-i18n="tm.q2">„Die Free FFlags aus dem Community-Server sind top, laufen stabil und ohne Ban.“</p>
+          <div class="tm-author">@robloxfan</div>
+        </div>
+        <div class="tm-card">
+          <div class="tm-avatar" style="--c1:#d3a55c;--c2:#9c6b24">⚡</div>
+          <p class="tm-quote" data-i18n="tm.q3">„Void Shop Support ist mega schnell, mein Injector lief sofort.“</p>
+          <div class="tm-author">@clipper</div>
+        </div>
       </div>
       <button class="tm-nav" id="tmNext" aria-label="Nächstes">›</button>
     </div>
     <div class="tm-dots" id="tmDots"></div>
+  </section>
+
+  <!-- Ideen Section -->
+  <section id="ideas" class="wrap">
+    <div class="section-head">
+      <div class="eyebrow" data-i18n="ideas.eyebrow">Eure Ideen</div>
+      <h2 data-i18n="ideas.title">Was wir als Nächstes bauen</h2>
+      <p style="color: var(--muted); font-size: 18px; margin-top: 8px;" data-i18n="ideas.desc">Ideen aus der Community – schreib deine Vorschläge in den Discord!</p>
+    </div>
+    <div class="idea-grid">
+      <div class="idea-card">
+        <div class="idea-ico">🎮</div>
+        <h4 data-i18n="idea1.t">Gang-Fight-Turniere</h4>
+        <p data-i18n="idea1.d">Mehr Events am Wochenende mit Preisen für die Community.</p>
+      </div>
+      <div class="idea-card">
+        <div class="idea-ico">🎥</div>
+        <h4 data-i18n="idea2.t">TikTok-Tutorials</h4>
+        <p data-i18n="idea2.d">Roblox-Tools als kurze Video-Reihe erklärt.</p>
+      </div>
+      <div class="idea-card">
+        <div class="idea-ico">🎁</div>
+        <h4 data-i18n="idea3.t">Free-FF Giveaways</h4>
+        <p data-i18n="idea3.d">Regelmäßige Verlosungen im Community-Server.</p>
+      </div>
+      <div class="idea-card">
+        <div class="idea-ico">💡</div>
+        <h4 data-i18n="idea4.t">Ideen-Board</h4>
+        <p data-i18n="idea4.d">Genau diese Seite – schreib uns deine Vorschläge!</p>
+      </div>
+    </div>
+    <div style="margin-top: 26px;">
+      <a href="https://discord.gg/39dqMvXCnc" target="_blank" class="btn btn-accent" data-i18n="ideas.cta">💡 Idee im Discord einreichen</a>
+    </div>
   </section>
 
   <!-- Footer -->
@@ -638,6 +693,7 @@
     var I18N = {
       de: {
         "nav.about": "Über mich", "nav.discords": "Meine Discords", "nav.stats": "Stats",
+        "nav.ideas": "Ideen",
         "nav.join": "💎 Community betreten",
         "hero.eyebrow": "🎬 Content Creator & TikToker",
         "hero.title1": "Hey, ich bin",
@@ -664,6 +720,7 @@
         "stat1.label": "TikTok Follower", "stat2.label": "Fuse Eh Community",
         "stat3.label": "Void Shop Members", "stat4.label": "VEXO Community",
         "coming": "⏳ Coming Soon",
+        "norealtime": "Keine Live-Daten",
         "faq.eyebrow": "FAQ", "faq.title": "Häufige Fragen",
         "faq.q1": "Sind die Injector sicher?",
         "faq.a1": "Ja – alle Scripts im Void Shop sind reine UI-Verbesserungen, geprüft und mit Anti-Ban-Absicherung. Wir empfehlen aber immer eigenverantwortliche Nutzung.",
@@ -672,15 +729,28 @@
         "faq.q3": "Wann streamst du live?",
         "faq.a3": "Meistens abends auf TikTok. Sobald ein Stream live geht, leuchtet der 🔴 LIVE-Badge oben auf der Seite.",
         "tm.eyebrow": "Community", "tm.title": "Was die Community sagt",
-        "tm.q1": "„Fuse Eh ist der beste Gang-Server, hier trifft man immer jemanden zum Zocken.“<span class=\"tm-author\">— @player_one</span>",
-        "tm.q2": "„Die Free FFlags aus dem Community-Server sind top, laufen stabil und ohne Ban.“<span class=\"tm-author\">— @robloxfan</span>",
-        "tm.q3": "„Void Shop Support ist mega schnell, mein Injector lief sofort.“<span class=\"tm-author\">— @clipper</span>",
+        "tm.q1": "„Fuse Eh ist der beste Gang-Server, hier trifft man immer jemanden zum Zocken.“",
+        "tm.q2": "„Die Free FFlags aus dem Community-Server sind top, laufen stabil und ohne Ban.“",
+        "tm.q3": "„Void Shop Support ist mega schnell, mein Injector lief sofort.“",
+        "ideas.eyebrow": "Eure Ideen",
+        "ideas.title": "Was wir als Nächstes bauen",
+        "ideas.desc": "Ideen aus der Community – schreib deine Vorschläge in den Discord!",
+        "idea1.t": "Gang-Fight-Turniere",
+        "idea1.d": "Mehr Events am Wochenende mit Preisen für die Community.",
+        "idea2.t": "TikTok-Tutorials",
+        "idea2.d": "Roblox-Tools als kurze Video-Reihe erklärt.",
+        "idea3.t": "Free-FF Giveaways",
+        "idea3.d": "Regelmäßige Verlosungen im Community-Server.",
+        "idea4.t": "Ideen-Board",
+        "idea4.d": "Genau diese Seite – schreib uns deine Vorschläge!",
+        "ideas.cta": "💡 Idee im Discord einreichen",
         "footer.left": "<b>VEXO HUB</b> — Offizielle Hub-Seite für TikTok & Community Discords.",
         "footer.right": "© 2026 VEXO. Alle Rechte vorbehalten. Made by Fufi",
         "visits.label": "Aufrufe"
       },
       en: {
         "nav.about": "About", "nav.discords": "My Discords", "nav.stats": "Stats",
+        "nav.ideas": "Ideas",
         "nav.join": "💎 Join Community",
         "hero.eyebrow": "🎬 Content Creator & TikToker",
         "hero.title1": "Hey, I'm",
@@ -707,6 +777,7 @@
         "stat1.label": "TikTok Followers", "stat2.label": "Fuse Eh Community",
         "stat3.label": "Void Shop Members", "stat4.label": "VEXO Community",
         "coming": "⏳ Coming Soon",
+        "norealtime": "No live data",
         "faq.eyebrow": "FAQ", "faq.title": "Frequently Asked Questions",
         "faq.q1": "Are the injectors safe?",
         "faq.a1": "Yes – all scripts in the Void Shop are UI-only improvements, tested and protected with anti-ban. We always recommend responsible use.",
@@ -715,17 +786,27 @@
         "faq.q3": "When do you stream live?",
         "faq.a3": "Mostly in the evenings on TikTok. As soon as a stream goes live, the 🔴 LIVE badge lights up at the top of the page.",
         "tm.eyebrow": "Community", "tm.title": "What the community says",
-        "tm.q1": "„Fuse Eh is the best gang server, you always find someone to play with.“<span class=\"tm-author\">— @player_one</span>",
-        "tm.q2": "„The free FFlags from the community server are top, run stable and ban-free.“<span class=\"tm-author\">— @robloxfan</span>",
-        "tm.q3": "„Void Shop support is super fast, my injector worked instantly.“<span class=\"tm-author\">— @clipper</span>",
+        "tm.q1": "„Fuse Eh is the best gang server, you always find someone to play with.“",
+        "tm.q2": "„The free FFlags from the community server are top, run stable and ban-free.“",
+        "tm.q3": "„Void Shop support is super fast, my injector worked instantly.“",
+        "ideas.eyebrow": "Your Ideas",
+        "ideas.title": "What we build next",
+        "ideas.desc": "Ideas from the community – drop your suggestions in Discord!",
+        "idea1.t": "Gang-Fight Tourneys",
+        "idea1.d": "More weekend events with prizes for the community.",
+        "idea2.t": "TikTok Tutorials",
+        "idea2.d": "Roblox tools explained in a short video series.",
+        "idea3.t": "Free-FF Giveaways",
+        "idea3.d": "Regular giveaways in the community server.",
+        "idea4.t": "Ideas Board",
+        "idea4.d": "This very page – send us your suggestions!",
+        "ideas.cta": "💡 Submit an idea on Discord",
         "footer.left": "<b>VEXO HUB</b> — Official hub page for TikTok & community Discords.",
         "footer.right": "© 2026 VEXO. All rights reserved. Made by Fufi",
         "visits.label": "visits"
       }
     };
 
-    I18N.de.norealtime = "Keine Live-Daten";
-    I18N.en.norealtime = "No live data";
     var curLang = "de";
     function locale() { return curLang === "de" ? "de-DE" : "en-US"; }
     function fmt(n) { return Number(n).toLocaleString(locale()); }
@@ -788,7 +869,7 @@
     window.addEventListener("scroll", onScroll, { passive: true });
     onScroll();
 
-    var sections = ["about", "discords", "stats", "community"];
+    var sections = ["about", "discords", "stats", "community", "ideas"];
     if ("IntersectionObserver" in window) {
       var navObserver = new IntersectionObserver(function (entries) {
         entries.forEach(function (e) {
@@ -806,20 +887,29 @@
     }
 
     // =====================================================================
-    // LIVE-STRIP: Countdown oder LIVE-Badge
+    // LIVE-STRIP: Wann ist die nächste Live? / LIVE-Badge
     // =====================================================================
     var liveStrip = document.getElementById("liveStrip");
-    var liveText = document.getElementById("liveText");
+    var liveWhen = document.getElementById("liveWhen");
     var liveCountdown = document.getElementById("liveCountdown");
+    function fmtNextDate(d) {
+      try {
+        return new Intl.DateTimeFormat(curLang === "de" ? "de-DE" : "en-US",
+          { weekday: "short", day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }
+        ).format(d);
+      } catch (e) { return d.toISOString(); }
+    }
     function tickCountdown() {
-      var isLive = CONFIG.liveNow || new Date(CONFIG.nextStream).getTime() <= Date.now();
+      var target = new Date(CONFIG.nextStream);
+      var isLive = CONFIG.liveNow || target.getTime() <= Date.now();
       if (isLive) {
         liveStrip.classList.add("is-live");
-        liveText.textContent = (I18N[curLang] || I18N.de)["live.now"];
         liveCountdown.textContent = "";
         return;
       }
-      var diff = new Date(CONFIG.nextStream).getTime() - Date.now();
+      liveStrip.classList.remove("is-live");
+      liveWhen.textContent = (curLang === "de" ? "Nächster Live: " : "Next live: ") + fmtNextDate(target);
+      var diff = target.getTime() - Date.now();
       var s = Math.max(0, Math.floor(diff / 1000));
       var h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), sec = s % 60;
       liveCountdown.textContent =
@@ -858,7 +948,8 @@
     resetTM();
 
     // =====================================================================
-    // LIVE-STATS (Discord + TikTok) + COUNT-UP
+    // LIVE-STATS (Discord, echt & live) + COUNT-UP
+    // REGEL: NIEMALS Fake-Zahlen. TikTok ohne echte Quelle -> Karte aus.
     // =====================================================================
     var statMap = {
       tiktok_followers: document.querySelector('[data-stat="tiktok_followers"]'),
@@ -879,11 +970,8 @@
       requestAnimationFrame(step);
     }
 
-    // REGEL: NIEMALS Fake-Zahlen. Jede Zahl ist echt & live.
-    // Fehlt eine echte Zahl (API nicht erreichbar / keine Quelle
-    // konfiguriert), wird ehrlich "—" bzw. gar nichts angezeigt.
     var statsRevealed = false;
-    var statValues = {}; // k -> echter Zielwert
+    var statValues = {};
 
     function renderStat(k, v) {
       var el = statMap[k];
@@ -913,14 +1001,8 @@
       if (tiktok && tiktok.followers != null) {
         tkCard.style.display = "";
         renderStat("tiktok_followers", tiktok.followers);
-        if (tiktok.live_now && tiktok.live_viewers > 0) {
-          var pill = document.getElementById("ttLivePill");
-          var vw = document.getElementById("ttViewers");
-          if (pill && vw) { vw.textContent = fmt(tiktok.live_viewers); pill.hidden = false; }
-        }
       } else if (tkCard) {
-        // Keine echten TikTok-Zahlen -> Karte ausblenden (nie fake)
-        tkCard.style.display = "none";
+        tkCard.style.display = "none"; // keine echten TikTok-Zahlen -> nicht anzeigen
       }
     }
 
@@ -944,10 +1026,10 @@
     fetch("/api/stats")
       .then(function (r) { return r.json(); })
       .then(fillStats)
-      .catch(function () { /* Fallback: "Coming Soon" bleibt stehen */ });
+      .catch(function () { /* bei Fehler bleibt ehrlich "—" / "Keine Live-Daten" */ });
 
     // =====================================================================
-    // BESUCHERZÄHLER
+    // BESUCHERZÄHLER (echte Requests)
     // =====================================================================
     var vc = document.getElementById("visitCount");
     var cached = null;
