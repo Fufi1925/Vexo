@@ -2,15 +2,10 @@
 VEXO HUB - Webserver für Railway.app (Zero-Dependencies)
 Liest automatisch die PORT-Umgebungsvariable von Railway aus.
 
-Zusätzlich zu den statischen Dateien liefert dieser Server JSON-Endpunkte:
-  /api/stats    -> Live-Daten von Discord (Mitglieder & Online) + TikTok-Snapshot
-  /api/visits   -> Zählt und gibt die Gesamtzahl der Website-Aufrufe zurück
-  /api/geo      -> Land -> Sprache (ohne IP zu loggen/speichern)
-  /api/tiktok   -> POST-Webhook: nimmt ECHTE TikTok-Live-Daten eines Proxys entgegen
-
-DATENSCHUTZ: IP-Adressen werden NIEMALS geloggt oder persistent gespeichert.
-REGEL: NIEMALS Fake-Zahlen. TikTok-Zahlen kommen nur über den Webhook (echt)
-oder eine konfigurierte TIKTOK_SOURCE – sonst werden bewusst keine angezeigt.
+Zusätzlich zu den statischen Dateien liefert dieser Server zwei
+JSON-Endpunkte:
+  /api/stats  -> Live-Daten von Discord (Mitgliederzahlen) + TikTok-Konfig
+  /api/visits -> Zählt und gibt die Gesamtzahl der Website-Aufrufe zurück
 """
 import http.server
 import socketserver
@@ -19,15 +14,12 @@ import json
 import threading
 import urllib.request
 from datetime import datetime, timezone
-from urllib.parse import urlparse, parse_qs
 
 PORT = int(os.environ.get("PORT", 8080))
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 VISITS_FILE = os.path.join(BASE_DIR, "visits.json")
-TIKTOK_FILE = os.path.join(BASE_DIR, "tiktok.json")
 visits_lock = threading.Lock()
-tiktok_lock = threading.Lock()
 
 # ---------------------------------------------------------------------------
 # Konfiguration / Fallback-Werte
@@ -41,53 +33,28 @@ CONFIG = {
     },
 }
 
-# Optionaler Shared-Secret für den TikTok-Webhook (env TIKTOK_WEBHOOK_SECRET).
-# Wenn gesetzt, MUSS der Webhook das Secret per ?secret=... oder Header
-# X-Webhook-Secret übergeben. Leer = kein Schutz (nur für lokale Tests).
-TIKTOK_WEBHOOK_SECRET = os.environ.get("TIKTOOK_WEBHOOK_SECRET", "") or None
-TIKTOK_WEBHOOK_SECRET = os.environ.get("TIKTOK_WEBHOOK_SECRET", "") or TIKTOK_WEBHOOK_SECRET
-
-# TikTok bietet KEINE kostenlose öffentliche Echtzeit-API für Follower- oder
-# Live-Viewer-Zahlen. ECHTE, LIVE TikTok-Daten kommen über einen eigenen
-# Proxy/Webhook, der POST /api/tiktok aufruft und hier in tiktok.json
-# gespeichert wird. Alternativ kann TIKTOK_SOURCE auf eine eigene Proxy-URL
-# zeigen, die JSON der Form {"followers":N,"live_viewers":N,"live_now":bool}
-# zurückgibt. Solange KEINE echten Daten da sind -> KEINE (Fake-)Zahlen.
-TIKTOK_SOURCE = os.environ.get("TIKTOK_SOURCE", None) or None
-
-
-def load_tiktok():
-    """Liest den zuletzt gespeicherten echten TikTok-Snapshot (Webhook)."""
-    try:
-        with open(TIKTOK_FILE) as f:
-            return json.load(f)
-    except Exception:
-        return None
-
-
-def save_tiktok(data):
-    """Speichert den echten TikTok-Snapshot – niemals erfundene Felder."""
-    try:
-        with tiktok_lock:
-            with open(TIKTOK_FILE, "w") as f:
-                json.dump(data, f)
-    except Exception:
-        pass
+# TikTok bietet KEINE kostenlose öffentliche Echtzeit-API für
+# Follower- oder Live-Viewer-Zahlen. Um ECHTE, LIVE TikTok-Daten zu
+# zeigen, hier eine echte Datenquelle eintragen (z.B. ein eigener Proxy,
+# der mit einem gültigen TikTok-Token autorisiert ist und JSON der Form
+# {"followers": N, "live_viewers": N, "live_now": bool} zurückgibt).
+# Solange dies None ist, werden BEWUSST KEINE (fake) TikTok-Zahlen
+# angezeigt.
+TIKTOK_SOURCE = None
 
 
 def fetch_tiktok():
     """Liefert echte TikTok-Daten oder None - niemals Fake-Zahlen."""
-    if TIKTOK_SOURCE:
-        try:
-            req = urllib.request.Request(
-                TIKTOK_SOURCE, headers={"User-Agent": "VEXO-Hub/1.0"}
-            )
-            with urllib.request.urlopen(req, timeout=5) as r:
-                return json.load(r)
-        except Exception:
-            return None
-    # Webhook-Modell: zuletzt gepushte echte Daten
-    return load_tiktok()
+    if not TIKTOK_SOURCE:
+        return None
+    try:
+        req = urllib.request.Request(
+            TIKTOK_SOURCE, headers={"User-Agent": "VEXO-Hub/1.0"}
+        )
+        with urllib.request.urlopen(req, timeout=5) as r:
+            return json.load(r)
+    except Exception:
+        return None
 
 
 # ---------------------------------------------------------------------------
@@ -195,14 +162,9 @@ class VexoHandler(http.server.SimpleHTTPRequestHandler):
             return self.serve_geo()
         return super().do_GET()
 
-    def do_POST(self):
-        if self.path.split("?")[0] == "/api/tiktok":
-            return self.serve_tiktok_webhook()
-        self.send_error(404, "Not Found")
-
-    def _json(self, payload, status=200):
+    def _json(self, payload):
         body = json.dumps(payload).encode("utf-8")
-        self.send_response(status)
+        self.send_response(200)
         self.send_header("Content-Type", "application/json; charset=utf-8")
         self.send_header("Cache-Control", "no-store")
         self.send_header("Access-Control-Allow-Origin", "*")
@@ -240,41 +202,6 @@ class VexoHandler(http.server.SimpleHTTPRequestHandler):
         country = geo_lookup(ip)
         lang = COUNTRY_TO_LANG.get(country.upper(), "en") if country else "en"
         return self._json({"country": country, "lang": lang})
-
-    def serve_tiktok_webhook(self):
-        # Optionaler Secret-Check (Datenschutz/Integrity)
-        if TIKTOK_WEBHOOK_SECRET:
-            secret = self.headers.get("X-Webhook-Secret", "")
-            q = parse_qs(urlparse(self.path).query)
-            ok = (secret == TIKTOK_WEBHOOK_SECRET) or (
-                q.get("secret", [""])[0] == TIKTOK_WEBHOOK_SECRET
-            )
-            if not ok:
-                return self._json({"error": "unauthorized"}, status=401)
-
-        try:
-            length = int(self.headers.get("Content-Length", 0) or 0)
-            raw = self.rfile.read(length) if length else b"{}"
-            payload = json.loads(raw or b"{}")
-        except Exception:
-            return self._json({"error": "invalid json"}, status=400)
-
-        if not isinstance(payload, dict):
-            return self._json({"error": "invalid payload"}, status=400)
-
-        # Nur echte Felder übernehmen – KEINE Erfindung von Zahlen.
-        clean = {}
-        clean["username"] = str(payload.get("username", "@ehvexo"))[:64]
-        f = payload.get("followers")
-        clean["followers"] = int(f) if isinstance(f, (int, float)) and f >= 0 else None
-        lv = payload.get("live_viewers")
-        clean["live_viewers"] = int(lv) if isinstance(lv, (int, float)) and lv >= 0 else None
-        ln = payload.get("live_now")
-        clean["live_now"] = bool(ln) if isinstance(ln, (bool, int, float)) else False
-        clean["source"] = str(payload.get("source", "webhook"))[:64]
-        clean["updated_at"] = datetime.now(timezone.utc).isoformat()
-        save_tiktok(clean)
-        return self._json(clean)
 
 
 if __name__ == "__main__":
