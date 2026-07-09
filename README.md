@@ -35,3 +35,51 @@ git push origin main
 * **Build Command:** *(leer lassen)*
 * **Start Command:** `python3 server.py`
 * **Root Directory:** `/`
+
+---
+
+## 🎬 Echte TikTok-Live-Daten per Webhook / Proxy
+
+TikTok bietet **keine** kostenlose Echtzeit-API. Um echte, live TikTok-Daten (Follower & Live-Status) zu zeigen, ohne je Fake-Zahlen zu erfinden, wird ein **eigener Proxy/Webhook** genutzt:
+
+1. Du betreibst irgendwo einen kleinen Proxy/Dienst, der echte TikTok-Daten abruft.
+2. Dieser sendet per **POST `/api/tiktok`** ein JSON an den VEXO-Server, z.B.:
+   ```json
+   {
+     "username": "@ehvexo",
+     "followers": 130500,
+     "live_now": true,
+     "live_viewers": 4200,
+     "source": "myproxy"
+   }
+   ```
+3. Der Server speichert das in `tiktok.json` und zeigt:
+   - die **Follower** in der TikTok-Stat-Karte,
+   - einen **🔴 LIVE-Badge** (im Bio-Panel + als floating Pill oben rechts) **nur wenn `live_now: true`**,
+   - die echten **Live-Viewer** (falls mitgeschickt).
+
+### Webhook absichern (optional, empfohlen)
+Setze auf Railway eine Env-Variable `TIKTOK_WEBHOOK_SECRET` (oder `TIKTOK_WEBHOOK_SECRET`). Dann MUSS der Webhook das Secret übergeben:
+```bash
+curl -X POST https://deine-app.up.railway.app/api/tiktok \
+  -H "X-Webhook-Secret: DEIN_SECRET" \
+  -H "Content-Type: application/json" \
+  -d '{"live_now":true,"followers":130500,"live_viewers":4200}'
+```
+Ohne/mit falschem Secret → `401`. Ungültiges JSON → `400`.
+
+### Alternative: Pull-Quelle
+Statt Push kannst du `TIKTOK_SOURCE` auf eine URL setzen, die dasselbe JSON zurückgibt – der Server holt es sich bei jedem `/api/stats`-Aufruf.
+
+---
+
+## 📡 Live-Endpunkte & Datenschutz
+
+| Endpoint | Funktion |
+|----------|----------|
+| `GET /api/stats` | Discord-Mitglieder + **Online** (echte Invite-API) + TikTok-Snapshot |
+| `GET /api/visits` | Besucherzähler (persistent, ohne IP) |
+| `GET /api/geo` | Land→Sprache (IP wird **nicht** geloggt/gespeichert) |
+| `POST /api/tiktok` | TikTok-Webhook (siehe oben) |
+
+**Regel:** Es werden **niemals Fake-Zahlen** angezeigt. Fehlen echte Daten (z.B. kein TikTok-Webhook), werden bewusst keine erfundenen Werte gezeigt – die Karte bleibt aus bzw. zeigt „Keine Live-Daten". IP-Adressen werden an keiner Stelle geloggt oder persistiert.
