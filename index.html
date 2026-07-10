@@ -459,26 +459,14 @@
     /* FAQ-Summary Hover */
     .faq-item summary:hover { background: var(--surface-2); }
 
-    /* ===== CUSTOM CURSOR / MAUS-TRACKER (rein visuell, keine Daten) ===== */
-    .cursor-glow, .cursor-ring, .cursor-dot {
-      position: fixed; top: 0; left: 0; pointer-events: none; z-index: 300;
-      opacity: 0; will-change: transform;
-    }
+    /* ===== CUSTOM CURSOR / MAUS-TRACKER (nur Glow, rein visuell, keine Daten) ===== */
     .cursor-glow {
-      width: 480px; height: 480px; margin: -240px 0 0 -240px; border-radius: 50%;
-      background: radial-gradient(circle, rgba(193, 161, 109, 0.18), transparent 62%);
-      mix-blend-mode: screen; transition: opacity 0.3s ease;
+      position: fixed; top: 0; left: 0; pointer-events: none; z-index: 300;
+      width: 520px; height: 520px; margin: -260px 0 0 -260px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(193, 161, 109, 0.22), transparent 60%);
+      mix-blend-mode: screen; opacity: 0; transition: opacity 0.3s ease; will-change: transform;
     }
-    .cursor-ring {
-      width: 34px; height: 34px; margin: -17px 0 0 -17px; border-radius: 50%;
-      border: 2px solid var(--accent); transition: width 0.2s ease, height 0.2s ease, margin 0.2s ease, background 0.2s ease, opacity 0.3s ease;
-    }
-    .cursor-ring.big { width: 56px; height: 56px; margin: -28px 0 0 -28px; background: rgba(115, 201, 149, 0.14); }
-    .cursor-dot {
-      width: 7px; height: 7px; margin: -3.5px 0 0 -3.5px; border-radius: 50%; background: var(--good);
-      box-shadow: 0 0 10px rgba(115, 201, 149, 0.8);
-    }
-    body.cursor-on .cursor-glow, body.cursor-on .cursor-ring, body.cursor-on .cursor-dot { opacity: 1; }
+    body.cursor-on .cursor-glow { opacity: 1; }
 
     /* Maus-Spotlight auf Karten (folgt dem Cursor innerhalb der Karte) */
     .dc-card::after, .idea-card::after, .stat-card::after, .bio-panel::after {
@@ -508,16 +496,51 @@
     .stat-card { transition: transform 0.25s cubic-bezier(0.16,1,0.3,1), box-shadow 0.25s ease; }
     .stat-card:hover { transform: translateY(-4px); box-shadow: 0 0 0 1px var(--accent-soft), 0 18px 40px rgba(0,0,0,0.28); }
 
+    /* Shimmer-Sweep beim Hover über Karten (Discord, Ideen, Stats, Bio) */
+    .card-shine { position: absolute; inset: 0; border-radius: inherit; overflow: hidden; pointer-events: none; z-index: 0; mix-blend-mode: overlay; }
+    .card-shine::before {
+      content: ""; position: absolute; top: 0; left: -80%; width: 55%; height: 100%;
+      background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.55), transparent);
+      transform: skewX(-20deg);
+    }
+    .dc-card:hover .card-shine::before, .idea-card:hover .card-shine::before,
+    .stat-card:hover .card-shine::before, .bio-panel:hover .card-shine::before { animation: sweep 0.9s ease; }
+    @keyframes sweep { to { left: 140%; } }
+
+    /* Karten-Hover: mehr Hub, Glow & Puls */
+    .dc-card:hover, .idea-card:hover {
+      transform: translateY(-10px) scale(1.012);
+      box-shadow: 0 30px 70px rgba(0, 0, 0, 0.4), 0 0 0 1px var(--accent-soft);
+    }
+    .dc-card:hover, .stat-card:hover { animation: cardPulse 2.2s ease-in-out infinite; }
+    @keyframes cardPulse {
+      0%, 100% { box-shadow: 0 30px 70px rgba(0, 0, 0, 0.35), 0 0 0 1px var(--accent-soft); }
+      50% { box-shadow: 0 30px 70px rgba(0, 0, 0, 0.35), 0 0 24px 2px rgba(193, 161, 109, 0.5); }
+    }
+    .dc-card h3 { transition: color 0.25s ease; }
+    .dc-card:hover h3 { color: var(--accent); }
+
+    /* Ambient: Badges & Icons */
+    .bio-badge { animation: floatY 5s ease-in-out infinite; }
+    .verified-icon { animation: iconPulse 2.2s ease-in-out infinite; transform-origin: center; }
+    @keyframes iconPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.14); } }
+    .banner-tag { animation: tagGlow 3s ease-in-out infinite; }
+    @keyframes tagGlow {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); }
+      50% { box-shadow: 0 0 18px 1px rgba(255, 255, 255, 0.28); }
+    }
+
     @media (prefers-reduced-motion: reduce) {
       * { animation: none !important; transition: none !important; }
       .reveal { opacity: 1 !important; transform: none !important; }
       .fx-orbs { display: none !important; }
       .btn::after, .stat-card::before, .links a::after { display: none !important; }
-      .cursor-glow, .cursor-ring, .cursor-dot { display: none !important; }
+      .cursor-glow { display: none !important; }
       .btn-accent { animation: none !important; }
       .progress-bar { animation: none !important; }
       .eyebrow:before { animation: none !important; }
       .dc-card::after, .idea-card::after, .stat-card::after, .bio-panel::after { display: none !important; }
+      .card-shine { display: none !important; }
       .ripple { display: none !important; }
     }
     @media (max-width: 860px) {
@@ -554,10 +577,8 @@
   <!-- Floating LIVE-Pill (nur bei echtem Live via Webhook) -->
   <div class="live-float live-badge" id="liveFloat"><span class="dot"></span><span id="liveFloatText">LIVE</span></div>
 
-  <!-- Custom Cursor / Maus-Tracker (rein visuell, keine Daten) -->
+  <!-- Custom Cursor / Maus-Tracker (nur Glow, rein visuell, keine Daten) -->
   <div class="cursor-glow" id="cursorGlow"></div>
-  <div class="cursor-ring" id="cursorRing"></div>
-  <div class="cursor-dot" id="cursorDot"></div>
 
   <!-- Navigation -->
   <header class="nav-shell">
@@ -1235,34 +1256,20 @@
       var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
       if (!fine || reduce) return; // nur Desktop mit Maus; reduced-motion aus
 
-      var dot = document.getElementById("cursorDot");
-      var ring = document.getElementById("cursorRing");
       var glow = document.getElementById("cursorGlow");
-      if (!dot || !ring || !glow) return;
+      if (!glow) return;
       document.body.classList.add("cursor-on");
 
-      var mx = 0, my = 0, rx = 0, ry = 0;
+      // Nur der Glow folgt der Maus (kein Ring/Punkt)
       window.addEventListener("mousemove", function (e) {
-        mx = e.clientX; my = e.clientY;
-        dot.style.transform = "translate(" + mx + "px," + my + "px)";
-        glow.style.transform = "translate(" + mx + "px," + my + "px)";
+        glow.style.transform = "translate(" + e.clientX + "px," + e.clientY + "px)";
       }, { passive: true });
 
-      (function loop() {
-        rx += (mx - rx) * 0.18; ry += (my - ry) * 0.18;
-        ring.style.transform = "translate(" + rx + "px," + ry + "px)";
-        requestAnimationFrame(loop);
-      })();
-
-      // Ring wächst über interaktiven Elementen
-      var hot = "a, button, .btn, .icon-toggle, .dc-card, .idea-card, .stat-card";
-      document.querySelectorAll(hot).forEach(function (el) {
-        el.addEventListener("mouseenter", function () { ring.classList.add("big"); });
-        el.addEventListener("mouseleave", function () { ring.classList.remove("big"); });
-      });
-
-      // Maus-Spotlight pro Karte (folgt dem Cursor innerhalb der Karte)
+      // Shine-Overlay pro Karte (Shimmer beim Hover) + Spotlight folgt Cursor
       document.querySelectorAll(".dc-card, .idea-card, .stat-card, .bio-panel").forEach(function (card) {
+        var s = document.createElement("i");
+        s.className = "card-shine";
+        card.appendChild(s);
         card.addEventListener("mousemove", function (e) {
           var r = card.getBoundingClientRect();
           card.style.setProperty("--mx", ((e.clientX - r.left) / r.width * 100) + "%");
