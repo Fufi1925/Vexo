@@ -459,11 +459,66 @@
     /* FAQ-Summary Hover */
     .faq-item summary:hover { background: var(--surface-2); }
 
+    /* ===== CUSTOM CURSOR / MAUS-TRACKER (rein visuell, keine Daten) ===== */
+    .cursor-glow, .cursor-ring, .cursor-dot {
+      position: fixed; top: 0; left: 0; pointer-events: none; z-index: 300;
+      opacity: 0; will-change: transform;
+    }
+    .cursor-glow {
+      width: 480px; height: 480px; margin: -240px 0 0 -240px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(193, 161, 109, 0.18), transparent 62%);
+      mix-blend-mode: screen; transition: opacity 0.3s ease;
+    }
+    .cursor-ring {
+      width: 34px; height: 34px; margin: -17px 0 0 -17px; border-radius: 50%;
+      border: 2px solid var(--accent); transition: width 0.2s ease, height 0.2s ease, margin 0.2s ease, background 0.2s ease, opacity 0.3s ease;
+    }
+    .cursor-ring.big { width: 56px; height: 56px; margin: -28px 0 0 -28px; background: rgba(115, 201, 149, 0.14); }
+    .cursor-dot {
+      width: 7px; height: 7px; margin: -3.5px 0 0 -3.5px; border-radius: 50%; background: var(--good);
+      box-shadow: 0 0 10px rgba(115, 201, 149, 0.8);
+    }
+    body.cursor-on .cursor-glow, body.cursor-on .cursor-ring, body.cursor-on .cursor-dot { opacity: 1; }
+
+    /* Maus-Spotlight auf Karten (folgt dem Cursor innerhalb der Karte) */
+    .dc-card::after, .idea-card::after, .stat-card::after, .bio-panel::after {
+      content: ""; position: absolute; inset: 0; border-radius: inherit; z-index: -1;
+      background: radial-gradient(260px circle at var(--mx, 50%) var(--my, 50%), rgba(217, 200, 168, 0.22), transparent 45%);
+      opacity: 0; transition: opacity 0.3s ease; pointer-events: none;
+    }
+    .dc-card:hover::after, .idea-card:hover::after, .stat-card:hover::after, .bio-panel:hover::after { opacity: 1; }
+    .idea-card { position: relative; overflow: hidden; }
+
+    /* Button-Ripple beim Klick */
+    .ripple { position: absolute; border-radius: 50%; background: rgba(255, 255, 255, 0.4); transform: scale(0); animation: ripple 0.6s ease-out; pointer-events: none; }
+    @keyframes ripple { to { transform: scale(2.6); opacity: 0; } }
+
+    /* Mehr Animation: Fortschrittsbalken, Eyebrow, CTA, Stat-Hover */
+    .progress-bar {
+      background: linear-gradient(90deg, var(--accent), var(--good), var(--warn), var(--accent));
+      background-size: 300% 100%; animation: barShift 4s linear infinite;
+    }
+    @keyframes barShift { to { background-position: 300% 0; } }
+    .eyebrow:before { animation: livePulse 2s ease-in-out infinite; }
+    .btn-accent { animation: ctaPulse 2.4s ease-in-out infinite; }
+    @keyframes ctaPulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(193, 161, 109, 0.5); }
+      50% { box-shadow: 0 0 0 15px rgba(193, 161, 109, 0); }
+    }
+    .stat-card { transition: transform 0.25s cubic-bezier(0.16,1,0.3,1), box-shadow 0.25s ease; }
+    .stat-card:hover { transform: translateY(-4px); box-shadow: 0 0 0 1px var(--accent-soft), 0 18px 40px rgba(0,0,0,0.28); }
+
     @media (prefers-reduced-motion: reduce) {
       * { animation: none !important; transition: none !important; }
       .reveal { opacity: 1 !important; transform: none !important; }
       .fx-orbs { display: none !important; }
       .btn::after, .stat-card::before, .links a::after { display: none !important; }
+      .cursor-glow, .cursor-ring, .cursor-dot { display: none !important; }
+      .btn-accent { animation: none !important; }
+      .progress-bar { animation: none !important; }
+      .eyebrow:before { animation: none !important; }
+      .dc-card::after, .idea-card::after, .stat-card::after, .bio-panel::after { display: none !important; }
+      .ripple { display: none !important; }
     }
     @media (max-width: 860px) {
       .hero-grid { grid-template-columns: 1fr; gap: 32px; }
@@ -498,6 +553,11 @@
 
   <!-- Floating LIVE-Pill (nur bei echtem Live via Webhook) -->
   <div class="live-float live-badge" id="liveFloat"><span class="dot"></span><span id="liveFloatText">LIVE</span></div>
+
+  <!-- Custom Cursor / Maus-Tracker (rein visuell, keine Daten) -->
+  <div class="cursor-glow" id="cursorGlow"></div>
+  <div class="cursor-ring" id="cursorRing"></div>
+  <div class="cursor-dot" id="cursorDot"></div>
 
   <!-- Navigation -->
   <header class="nav-shell">
@@ -1164,6 +1224,76 @@
       about.addEventListener("mouseleave", function () {
         if (bio) bio.style.transform = "";
         if (lead) lead.style.transform = "";
+      });
+    })();
+
+    // =====================================================================
+    // MAUS-TRACKER & MEHR ANIMATIONEN (rein visuell – keine Daten/kein Tracking)
+    // =====================================================================
+    (function mouseFX() {
+      var fine = window.matchMedia && window.matchMedia("(pointer: fine)").matches;
+      var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      if (!fine || reduce) return; // nur Desktop mit Maus; reduced-motion aus
+
+      var dot = document.getElementById("cursorDot");
+      var ring = document.getElementById("cursorRing");
+      var glow = document.getElementById("cursorGlow");
+      if (!dot || !ring || !glow) return;
+      document.body.classList.add("cursor-on");
+
+      var mx = 0, my = 0, rx = 0, ry = 0;
+      window.addEventListener("mousemove", function (e) {
+        mx = e.clientX; my = e.clientY;
+        dot.style.transform = "translate(" + mx + "px," + my + "px)";
+        glow.style.transform = "translate(" + mx + "px," + my + "px)";
+      }, { passive: true });
+
+      (function loop() {
+        rx += (mx - rx) * 0.18; ry += (my - ry) * 0.18;
+        ring.style.transform = "translate(" + rx + "px," + ry + "px)";
+        requestAnimationFrame(loop);
+      })();
+
+      // Ring wächst über interaktiven Elementen
+      var hot = "a, button, .btn, .icon-toggle, .dc-card, .idea-card, .stat-card";
+      document.querySelectorAll(hot).forEach(function (el) {
+        el.addEventListener("mouseenter", function () { ring.classList.add("big"); });
+        el.addEventListener("mouseleave", function () { ring.classList.remove("big"); });
+      });
+
+      // Maus-Spotlight pro Karte (folgt dem Cursor innerhalb der Karte)
+      document.querySelectorAll(".dc-card, .idea-card, .stat-card, .bio-panel").forEach(function (card) {
+        card.addEventListener("mousemove", function (e) {
+          var r = card.getBoundingClientRect();
+          card.style.setProperty("--mx", ((e.clientX - r.left) / r.width * 100) + "%");
+          card.style.setProperty("--my", ((e.clientY - r.top) / r.height * 100) + "%");
+        }, { passive: true });
+      });
+
+      // Magnetische Buttons (ziehen leicht zum Cursor)
+      document.querySelectorAll(".btn, .icon-toggle").forEach(function (btn) {
+        btn.addEventListener("mousemove", function (e) {
+          var r = btn.getBoundingClientRect();
+          var x = (e.clientX - r.left - r.width / 2) * 0.25;
+          var y = (e.clientY - r.top - r.height / 2) * 0.35;
+          btn.style.transform = "translate(" + x + "px," + y + "px)";
+        });
+        btn.addEventListener("mouseleave", function () { btn.style.transform = ""; });
+      });
+
+      // Klick-Ripple
+      document.querySelectorAll(".btn").forEach(function (btn) {
+        btn.addEventListener("click", function (e) {
+          var r = btn.getBoundingClientRect();
+          var d = Math.max(r.width, r.height);
+          var s = document.createElement("span");
+          s.className = "ripple";
+          s.style.width = s.style.height = d + "px";
+          s.style.left = (e.clientX - r.left - d / 2) + "px";
+          s.style.top = (e.clientY - r.top - d / 2) + "px";
+          btn.appendChild(s);
+          setTimeout(function () { s.remove(); }, 600);
+        });
       });
     })();
 
